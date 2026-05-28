@@ -1,0 +1,22 @@
+# Python (Ambiente Virtual e Cache)
+backend/.venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node.js (Frontend - para quando iniciarmos)
+frontend/node_modules/
+frontend/dist/
+
+# Ambientes / Segredos
+.env
+.env.local
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
