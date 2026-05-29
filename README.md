@@ -1,7 +1,6 @@
-Plaintext
 # 💰 LootPrice
 
-O **LootPrice** é um agregador e comparador de preços de chaves de jogos digitais focado no mercado brasileiro. O sistema realiza a raspagem de dados (web scraping) e consome APIs de diversas lojas de jogos, normaliza as informações e exibe em uma interface única onde o jogo está mais barato.
+O **LootPrice** é um agregador e comparador de preços de chaves de jogos digitais. O sistema realiza a raspagem de dados (web scraping) e consome APIs de diversas lojas de jogos, normaliza as informações e exibe em uma interface única onde o jogo está mais barato.
 
 ---
 
@@ -74,46 +73,39 @@ O projeto adota uma estratégia de repositório único para facilitar o gerencia
 *   Ambiente **WSL2 (Ubuntu)** instalado (caso esteja no Windows).
 *   **Python 3.10+** instalado no ambiente Linux.
 *   **Docker** & **Docker Compose** configurados.
+*   **Lefthook** instalado globalmente.
 
 ---
 
-### 🚀 Configurando o Backend (Local)
+### 🚀 Configurando o Projeto
 
-**1. Navegue até a pasta do backend:**
-cd backend
+Utilizamos um **Makefile** para simplificar os comandos comuns. Os comandos devem ser executados na raiz do projeto.
 
-**2. Crie e ative o ambiente virtual (venv):**
-python3 -m venv .venv
-source .venv/bin/activate
-*(Você verá o prefixo `(.venv)` no terminal confirmando a ativação).*
+**1. Instale as dependências e configure os hooks de commit:**
+```bash
+make install
+```
 
-**3. Instale todas as dependências:**
-pip install -r requirements.txt
+**2. Suba o Banco de Dados e inicie o servidor de desenvolvimento:**
+```bash
+make dev
+```
 
-**4. Suba o Banco de Dados (PostgreSQL):**
-Certifique-se de que o Docker está rodando e execute o comando na raiz do projeto (onde está o `docker-compose.yml`):
-docker-compose up -d
-
-**5. Execute o servidor de desenvolvimento da API:**
-uvicorn main:app --reload
-
-A API estará disponível em `[http://127.0.0.1:8000](http://127.0.0.1:8000)` e a documentação interativa (Swagger) em `[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)`.
+A API estará disponível em `http://127.0.0.1:8000` e a documentação interativa (Swagger) em `http://127.0.0.1:8000/docs`.
 
 ---
 
 ## 🧪 Qualidade de Código & Testes
 
-Mantemos o código limpo e testado utilizando ferramentas modernas do ecossistema Python.
+Mantemos o código limpo e testado utilizando ferramentas modernas do ecossistema Python e Git Hooks.
 
-*   **Run Linter/Formatter (Ruff):**
-    ruff check .    # Para checar erros
-    ruff format .   # Para auto-formatar o código
+*   **Lint/Format:** `make lint` ou `make format`
+*   **Testes:** `make test`
 
-*   **Executar Testes Unitários (Pytest):**
-    pytest
+Os testes unitários são executados automaticamente no GitHub Actions a cada push. O **Lefthook** garante que o código esteja formatado e os commits sigam o padrão antes mesmo de subir para o repositório.
 
 ---
 
 ## 🤖 Uso de Inteligência Artificial (LLMs)
 
-Se você estiver desenvolvendo ou estendendo este projeto utilizando LLMs (como o Antigravity), sempre forneça os arquivos da pasta `docs/` como contexto inicial da sessão, especialmente o `docs/llm_context.md`. Isso garante que a IA siga estritamente o escopo definido do MVP e as escolhas de arquitetura.
+Se você estiver desenvolvendo ou estendendo este projeto utilizando LLMs, sempre forneça os arquivos da pasta `docs/` como contexto inicial da sessão, especialmente o `docs/llm_context.md`. Isso garante que a IA siga estritamente o escopo definido do MVP e as escolhas de arquitetura.

@@ -1,6 +1,6 @@
 # Arquitetura do Sistema - LootPrice
 
-O **LootPrice** é um agregador e comparador de preços de chaves de jogos focado no público brasileiro. O sistema realiza a raspagem de dados (web scraping) de diversas lojas, normaliza as informações e exibe para o usuário final onde o jogo está mais barato.
+O **LootPrice** é um agregador e comparador de preços de chaves de jogos. O sistema realiza a raspagem de dados (web scraping) de diversas lojas, normaliza as informações e exibe para o usuário final onde o jogo está mais barato.
 
 ---
 
@@ -11,9 +11,10 @@ Para garantir a entrega ágil e mitigar a complexidade inicial, o escopo está e
 ### Em Escopo
 * **Alvo:** Apenas jogos de PC.
 * **Lojas Suportadas (Fase 1):** Nuuvem (via Scraper) e Steam (via API pública).
-* **Frequência de Atualização:** Execução manual ou agendamento local simples (CLI script).
+* **Frequência de Atualização:** Execução manual ou agendamento local simples (via Makefile ou CLI script).
 * **Backend:** API REST para listagem e busca de jogos com seus respectivos preços agregados.
 * **Frontend:** Interface SPA simples para busca e comparação de preços.
+* **Padronização:** Commits via Conventional Commits e hooks de pré-commit (Lefthook).
 
 ### Fora de Escopo (Fases Futuras)
 * Autenticação de usuários, favoritos e listas de desejos.
@@ -32,9 +33,13 @@ Para garantir a entrega ágil e mitigar a complexidade inicial, o escopo está e
 * **Qualidade de Código:** Ruff (Linter/Formatter) e Pytest (Testes unitários).
 * **Scraping:** BeautifulSoup4 e HTTPX (para requisições assíncronas).
 
+### Ferramentas de Desenvolvimento
+* **Orquestração:** Makefile (comandos de instalação, dev e teste).
+* **Git Hooks:** Lefthook (padronização de commits e linting pré-commit).
+
 ### Banco de Dados & Infraestrutura Local
 * **Banco de Dados:** PostgreSQL 15+ (Relacional, rodando via Docker).
-* **CI/CD:** GitHub Actions (Validação de Lint e execução de Testes a cada Push).
+* **CI/CD:** GitHub Actions (Validação de Lint e execução de Testes Unitários a cada Push).
 
 ### Frontend (Fase Posterior)
 * React.js (TypeScript), Vite.js, TailwindCSS, Axios, Zod, React Hook Form.
@@ -62,6 +67,8 @@ lootprice/                  # Raiz do Repositório
 │   ├── requirements.txt    # Dependências do projeto Python
 │   ├── ruff.toml           # Configurações do Linter/Formatter
 │   └── main.py             # Ponto de entrada da aplicação FastAPI
+├── Makefile                # Atalhos de desenvolvimento
+├── lefthook.yml            # Configuração de Git Hooks
 └── frontend/               # Ecossistema React / TypeScript (Fase 2)
 ```
 
@@ -83,6 +90,3 @@ Arquivos locais de ambiente, binários de navegadores de testes, caches de linte
 2. Normalização: O backend limpa o título do jogo (ex: remove "PC - Steam" ou caracteres especiais) para garantir que o mesmo jogo de lojas diferentes aponte para o mesmo registro na tabela games.
 3. Persistência: Os preços atuais e os links de afiliados são salvos/atualizados na tabela prices.
 4. Consumo: O Frontend consome a rota do FastAPI, que entrega o jogo combinado com um array de preços ordenado do menor para o maior.
-
-
----

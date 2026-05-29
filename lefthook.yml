@@ -1,0 +1,24 @@
+# lefthook.yml
+
+pre-commit:
+  parallel: true
+  commands:
+    ruff-check:
+      root: "backend/"
+      glob: "*.py"
+      run: ruff check {staged_files}
+    ruff-format:
+      root: "backend/"
+      glob: "*.py"
+      run: ruff format {staged_files}
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: |
+        pattern="^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?!?: .+"
+        if ! echo "{1}" | grep -iqE "$pattern"; then
+          echo "Erro: Mensagem de commit não segue o padrão Conventional Commits."
+          echo "Exemplo: feat(parser): add nuuvem scraper"
+          exit 1
+        fi
