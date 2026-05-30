@@ -13,9 +13,10 @@ Para evitar "scope creep" (aumento descontrolado de escopo), a IA deve sugerir c
 * **Plataforma Alvo:** Apenas jogos de PC.
 * **Lojas Suportadas no MVP:** Nuuvem (via Web Scraping/Parser) e Steam (via API Pública).
 * **Lojas Proibidas no MVP (Não insistir):** Eneba e G2A.
+* **Autenticação:** JWT com suporte a OAuth2 (Google e Discord) e Login Local.
+* **Perfis:** Suporte inicial para perfis `User` e `Admin` (RBAC).
 * **Escopo Global:** O projeto não deve ser limitado apenas ao mercado brasileiro, visando escalabilidade global.
-* **Autenticação/Usuários:** Fora do escopo.
-* **Histórico de Preços:** Fora do escopo. Armazenar apenas o **preço atual**.
+* **Roadmap Futuro (Não implementar agora):** Wishlists, Alertas de Preço, Histórico de Preços.
 * **Testes:** Priorizar a criação de testes unitários com Pytest para novas funcionalidades.
 
 ---
@@ -25,6 +26,7 @@ Para evitar "scope creep" (aumento descontrolado de escopo), a IA deve sugerir c
 ### Backend & Ingestão
 * **Ambiente de Dev:** Python 3.10+ executado em ambiente **WSL2 (Ubuntu)** no Windows.
 * **Framework API:** **FastAPI** com servidores assíncronos.
+* **Segurança:** **Python-jose** (JWT) e **Passlib** (Hashing de senhas).
 * **ORM / Banco:** **SQLModel**.
 * **Validação / DTOs:** **Pydantic** (V2).
 * **Ferramentas de Scraping:** **BeautifulSoup4** e **HTTPX**.
@@ -75,10 +77,12 @@ Quando o desenvolvedor solicitar a criação de código neste projeto, siga rigi
 
 3. Padrão SQLModel: Prefira os métodos nativos do SQLModel.
 
-4. Testes Unitários: Ao criar novos modelos, serviços ou crawlers, sugira sempre um arquivo de teste correspondente na pasta `backend/tests/`.
+4. Segurança: Implemente OAuth2PasswordBearer para rotas protegidas e utilize scopes para controle de acesso (Admin/User).
 
-5. Scraping Resiliente: Utilize blocos try/except robustos com BeautifulSoup4.
+5. Testes Unitários: Ao criar novos modelos, serviços ou crawlers, sugira sempre um arquivo de teste correspondente na pasta `backend/tests/`.
 
-6. Logs: Utilize o módulo padrão logging do Python.
+6. Scraping Resiliente: Utilize blocos try/except robustos com BeautifulSoup4.
 
-7. Conventional Commits: Sugira mensagens de commit seguindo o padrão (ex: `feat: add steam crawler`, `fix: handle null prices`).
+7. Logs: Utilize o módulo padrão logging do Python.
+
+8. Conventional Commits: Sugira mensagens de commit seguindo o padrão (ex: `feat: add steam crawler`, `fix: handle null prices`).

@@ -12,15 +12,18 @@ Para garantir a entrega ágil e mitigar a complexidade inicial, o escopo está e
 * **Alvo:** Apenas jogos de PC.
 * **Lojas Suportadas (Fase 1):** Nuuvem (via Scraper) e Steam (via API pública).
 * **Frequência de Atualização:** Execução manual ou agendamento local simples (via Makefile ou CLI script).
-* **Backend:** API REST para listagem e busca de jogos com seus respectivos preços agregados.
-* **Frontend:** Interface SPA simples para busca e comparação de preços.
+* **Autenticação (MVP):** Implementação de JWT (JSON Web Tokens) com suporte a Login Social (Google e Discord) e Login Local.
+* **Perfis & Permissões:** Estrutura de níveis de acesso (RBAC) com perfis `User` e `Admin`.
+* **Backend:** API REST para listagem e busca de jogos, agregando preços e gerenciando usuários.
+* **Frontend:** Interface SPA simples para busca, comparação de preços e autenticação básica.
 * **Padronização:** Commits via Conventional Commits e hooks de pré-commit (Lefthook).
 
-### Fora de Escopo (Fases Futuras)
-* Autenticação de usuários, favoritos e listas de desejos.
-* Histórico e gráficos de variação de preço ao longo do tempo.
+### Fora de Escopo (Fase 3 - Roadmap Futuro)
+* Funcionalidades de **Wishlist** (Lista de Desejos) e favoritos.
 * Alertas de preço por e-mail ou Discord.
-* Integração com marketplaces cinzas complexos (Eneba, G2A) devido a bloqueios de Cloudflare.
+* Histórico e gráficos de variação de preço ao longo do tempo.
+* Integração com marketplaces cinzas complexos (Eneba, G2A).
+* Customização avançada de perfil de usuário.
 
 ---
 
@@ -87,6 +90,6 @@ Arquivos locais de ambiente, binários de navegadores de testes, caches de linte
 ```
 
 1. Ingestão: O script de scraping acessa as lojas parceiras.
-2. Normalização: O backend limpa o título do jogo (ex: remove "PC - Steam" ou caracteres especiais) para garantir que o mesmo jogo de lojas diferentes aponte para o mesmo registro na tabela games.
+2. Normalização: O backend limpa o título do jogo (ex: remove "PC - Steam" ou caracteres especiais) para garantir que o mesmo jogo de lojas differentes aponte para o mesmo registro na tabela games.
 3. Persistência: Os preços atuais e os links de afiliados são salvos/atualizados na tabela prices.
 4. Consumo: O Frontend consome a rota do FastAPI, que entrega o jogo combinado com um array de preços ordenado do menor para o maior.
