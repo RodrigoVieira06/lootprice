@@ -9,9 +9,9 @@
 
 | Campo | Valor |
 |---|---|
-| **Versão** | 0.1.0 |
-| **Última atualização** | 2026-05 |
-| **Atualizado por** | Claude (planejamento inicial) |
+| **Versão** | 0.1.1 |
+| **Última atualização** | 2026-06-01 |
+| **Atualizado por** | Gemini CLI |
 | **Fase atual** | Planejamento — nenhum código implementado ainda |
 | **Próximo card** | CARD-01: Setup inicial do repositório |
 
@@ -95,7 +95,7 @@ Nunca atualize parcialmente — sempre entregue o arquivo inteiro.
 React 18, TypeScript, Vite, TailwindCSS, Axios, Zod, React Hook Form, Zustand
 
 ### Tooling
-Makefile, Lefthook, GitHub Actions, GitHub Projects (ou Jira), MCP GitHub, MCP Jira, MCP DevTools
+Makefile, Lefthook, GitHub Actions, Jira, MCP GitHub, MCP Jira, MCP DevTools
 
 ---
 
@@ -264,9 +264,9 @@ class BaseCrawler(ABC):
 | 2026-05 | Alembic obrigatório desde o dia 1 | Evitar debt de schema sem rastreamento | SQLModel.create_all descartado para produção |
 | 2026-05 | `prices` como snapshot (sem histórico) | Simplicidade no MVP; histórico é Fase 3 | Tabela append-only descartada para MVP |
 | 2026-05 | `canonical_name` editável pelo admin | Normalização automática falha em edge cases | Deduplicação só automática descartada |
-| 2026-05 | GitHub Projects no MVP (não Jira) | Sem custo adicional; suficiente para 1 dev | Migrar para Jira se backlog crescer |
 | 2026-05 | `NUMERIC(10,2)` para preços | Precisão exata para dinheiro | `Float` descartado |
 | 2026-05 | `slowapi` para rate limiting desde o MVP | API pública sem throttle é risco imediato | Sem rate limiting descartado |
+| 2026-06-01 | Migração do GitHub Projects para Jira | Gestão de backlog centralizada no espaço "Loot Price" solicitado, cards exportados e configurados usando Jira MCP Server. | GitHub Projects |
 
 ---
 
@@ -381,6 +381,28 @@ make crawl                              # Executa todos os crawlers
 1. Fornecer este arquivo + `docs/project_cards.md` como contexto
 2. Executar CARD-01: setup do repositório
 3. Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas, `main.py` vazio
+
+### Sessão de Criação de Cards no Jira
+
+**Data:** 2026-06-01
+**LLM:** Gemini CLI
+**Duração:** Importação de Backlog para Jira
+
+**O que foi feito:**
+- Os 7 épicos e 21 tarefas (cards) foram criados e configurados no espaço do Jira "Loot Price" do projeto usando MCP.
+- Incluídas descrições detalhadas convertidas para o Atlassian Document Format.
+- Epics, prioridades e tags configurados em cada card individual.
+- Estrutura de dependência (Issue Links - `blocks`/`is blocked by`) foi implementada em todos os 21 cards.
+
+**Decisões tomadas nesta sessão:**
+- Migrar formalmente para Jira em vez do GitHub Projects, mantendo o controle total pelo Atlassian MCP.
+
+**Estado ao encerrar:** Nenhum código implementado. O espaço do projeto no Jira está plenamente montado para o time iniciar o MVP.
+
+**O que fazer na próxima sessão:**
+1. Iniciar os trabalhos pelo **CARD-01: Setup inicial do repositório**.
+2. Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas e arquivo `main.py` vazio.
+3. Atualizar o status do card no Jira para In Progress (`Em andamento`).
 
 ---
 
