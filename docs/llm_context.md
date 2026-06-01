@@ -91,7 +91,7 @@ Nunca atualize parcialmente — sempre entregue o arquivo inteiro.
 | PostgreSQL | 15+ | Banco principal |
 | Docker Compose | latest | Containerização do banco |
 
-### Frontend (Fase 2 — não implementar ainda)
+### Frontend (parte do MVP)
 React 18, TypeScript, Vite, TailwindCSS, Axios, Zod, React Hook Form, Zustand
 
 ### Tooling
@@ -134,7 +134,7 @@ docs/
 ├── architecture.md       ✅ Criado — visão arquitetural completa
 ├── database_schema.md    ✅ Criado — schema com todas as tabelas e constraints
 ├── llm_context.md        ✅ Este arquivo
-└── project_cards.md      ✅ Criado — 16 cards do Jira com critérios de aceitação
+└── project_cards.md      ✅ Criado — 21 cards do Jira com critérios de aceitação (7 épicos)
 ```
 
 ### [ATUALIZÁVEL] Arquivos do Backend
@@ -343,6 +343,39 @@ make crawl                              # Executa todos os crawlers
 - `canonical_name` como campo separado e editável
 
 **Estado ao encerrar:** Nenhum código implementado. Toda a sessão foi de planejamento e documentação. Pronto para iniciar CARD-01.
+
+**O que fazer na próxima sessão:**
+1. Fornecer este arquivo + `docs/project_cards.md` como contexto
+2. Executar CARD-01: setup do repositório
+3. Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas, `main.py` vazio
+
+### Sessão de Revisão
+
+**Data:** 2026-06-01
+**LLM:** Claude Opus 4.6
+**Duração:** Revisão de documentação
+
+**O que foi feito:**
+- Revisão completa de todos os 5 documentos do projeto
+- Corrigido `RawGameData.price_brl` de `float` para `Decimal` em architecture.md
+- Corrigido campo `url` para `affiliate_url` em architecture.md (alinhado com database_schema.md)
+- Adicionado campo `store_slug` ao `RawGameData` em architecture.md
+- Corrigido `DATABASE_URL` para usar driver `asyncpg` em architecture.md
+- Corrigida dependência do CARD-15 (removido CARD-10, rotas são públicas)
+- Corrigida árvore de dependências no sumário
+- Corrigidas URLs de placeholder `seu-usuario` para `RodrigoVieira06` no README.md
+- Adicionado `router.py` aos entregáveis do CARD-07
+- Criado CARD-17: rate limiting com slowapi (EPIC-6)
+- Criados CARD-18 a CARD-21: frontend React SPA (EPIC-7)
+- Total de cards atualizado de 16 para 21 (7 épicos)
+- Frontend confirmado como parte do MVP (não Fase 2)
+
+**Decisões tomadas nesta sessão:**
+- Frontend é MVP (não Fase 2) — cards de frontend criados
+- Rate limiting (slowapi) em card separado (CARD-17), não no CARD-01
+- `router.py` criado no CARD-07 (quando primeiras rotas surgem)
+
+**Estado ao encerrar:** Nenhum código implementado. Documentação revisada e corrigida. Pronto para iniciar CARD-01.
 
 **O que fazer na próxima sessão:**
 1. Fornecer este arquivo + `docs/project_cards.md` como contexto

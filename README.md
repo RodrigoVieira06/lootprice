@@ -2,7 +2,7 @@
 
 > Agregador e comparador de preços de chaves de jogos digitais.
 
-[![CI](https://github.com/seu-usuario/lootprice/actions/workflows/ci.yml/badge.svg)](https://github.com/seu-usuario/lootprice/actions/workflows/ci.yml)
+[![CI](https://github.com/RodrigoVieira06/lootprice/actions/workflows/ci.yml/badge.svg)](https://github.com/RodrigoVieira06/lootprice/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -47,7 +47,7 @@ Documentação completa: [`docs/architecture.md`](docs/architecture.md)
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/seu-usuario/lootprice.git
+git clone https://github.com/RodrigoVieira06/lootprice.git
 cd lootprice
 
 # 2. Copie as variáveis de ambiente

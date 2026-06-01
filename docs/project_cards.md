@@ -5,6 +5,7 @@
 > Cada card contém: tipo, épico pai, descrição técnica precisa, critérios de aceitação mensuráveis, arquivos a criar/editar, dependências entre cards e o que explicitamente **não** fazer.
 > Ao criar um card no Jira via MCP, use o campo `summary` para o título, `description` para o corpo completo em Markdown, `labels` para as labels e `priority` para a prioridade.
 > **Não resumir, não omitir critérios de aceitação, não alterar os títulos.**
+> **Total de cards: 21 (CARD-01 a CARD-21)**
 
 ---
 
@@ -17,6 +18,8 @@
 | Autenticação | EPIC-3 | 3º — paralelo ao épico de crawlers |
 | Crawlers e Ingestão | EPIC-4 | 4º — depende do banco |
 | API REST | EPIC-5 | 5º — depende de banco + crawlers |
+| Segurança e Middleware | EPIC-6 | 6º — rate limiting |
+| Frontend | EPIC-7 | 7º — depende do backend funcional |
 
 ---
 
@@ -369,8 +372,9 @@ Implementar os endpoints de autenticação local: registro de novo usuário e lo
 backend/
 ├── app/
 │   ├── api/
-│   │   └── v1/
-│   │       └── auth.py      ← POST /auth/register, POST /auth/login, POST /auth/refresh
+│   │   ├── v1/
+│   │   │   └── auth.py      ← POST /auth/register, POST /auth/login, POST /auth/refresh
+│   │   └── router.py        ← Agregador de rotas (importa e inclui todos os routers de v1/)
 │   └── schemas/
 │       └── auth.py          ← RegisterRequest, LoginRequest, TokenResponse
 └── tests/
@@ -784,7 +788,7 @@ Tipo: Task
 Prioridade: High
 Labels: backend, api
 Summary: feat(api): implementar endpoints de busca e listagem de jogos
-Depende de: CARD-04, CARD-10, CARD-12
+Depende de: CARD-04, CARD-12
 ```
 
 **Descrição:**
@@ -909,16 +913,291 @@ CARD-01 (Setup)
         │           └── CARD-12 (Normalizer)
         │                 └── CARD-13 (Steam Crawler)
         │                 └── CARD-14 (Nuuvem Crawler)
+        │                 └── CARD-15 (Games API)
         │                       └── CARD-16 (Admin API)
         └── CARD-05 (Model: users)
               └── CARD-06 (JWT + Security)
-                    └── CARD-07 (Auth Endpoints)
+                    └── CARD-07 (Auth Endpoints + router.py)
                           └── CARD-08 (Google OAuth)
                           └── CARD-09 (Discord OAuth)
                           └── CARD-10 (Dependencies + /me)
-                                └── CARD-15 (Games API)
                                 └── CARD-16 (Admin API)
+
+CARD-16 (Admin API — todas as deps resolvidas)
+  └── CARD-17 (Rate Limiting)
+
+CARD-15 (Games API) + CARD-10 (Dependencies + /me)
+  └── CARD-18 (Frontend Setup)
+        └── CARD-19 (Search Page)
+        └── CARD-20 (Auth Pages)
+        └── CARD-21 (Game Detail Page)
 ```
+
+---
+
+## EPIC-6 — Segurança e Middleware
+
+---
+
+### CARD-17
+
+```
+Tipo: Task
+Épico: EPIC-6
+Prioridade: High
+Labels: backend, security, middleware
+Summary: feat(security): implementar rate limiting com slowapi
+Depende de: CARD-16
+```
+
+**Descrição:**
+
+Adicionar rate limiting global na API usando `slowapi`. O rate limiting deve proteger todas as rotas públicas contra abuso e as rotas de admin contra brute force. Esta é uma camada de segurança obrigatória antes de qualquer deploy público.
+
+**Arquivos a criar/editar:**
+
+```
+backend/
+├── app/
+│   ├── core/
+│   │   └── rate_limit.py    ← configuração do slowapi (limiter, key_func)
+│   └── main.py              ← registrar middleware do slowapi
+└── tests/
+    └── test_core/
+        └── test_rate_limit.py
+```
+
+**Configuração esperada:**
+
+```python
+# Limites sugeridos:
+# - Rotas públicas (search, games): 60 requests/minuto por IP
+# - Rotas de auth (login, register): 10 requests/minuto por IP
+# - Rotas de admin: 30 requests/minuto por IP
+# - Rota de crawl: 2 requests/minuto por IP (admin only)
+
+# Key function: usar IP do client (com suporte a X-Forwarded-For para proxy/nginx)
+```
+
+**Critérios de Aceitação:**
+
+- [ ] `slowapi` integrado como middleware no FastAPI
+- [ ] Rotas públicas limitadas a 60 req/min por IP
+- [ ] Rotas de auth limitadas a 10 req/min por IP
+- [ ] Response `429 Too Many Requests` retornado quando limite é excedido
+- [ ] Header `X-RateLimit-Remaining` presente nas responses
+- [ ] Testes: request dentro do limite, request excedendo limite
+
+**Não fazer:**
+- Não usar Redis para armazenamento de contadores no MVP (in-memory é suficiente)
+- Não implementar rate limiting por usuário autenticado (apenas por IP no MVP)
+
+---
+
+## EPIC-7 — Frontend
+
+---
+
+### CARD-18
+
+```
+Tipo: Task
+Épico: EPIC-7
+Prioridade: High
+Labels: frontend, setup
+Summary: chore(frontend): setup inicial do React SPA com Vite + TypeScript
+Depende de: CARD-15, CARD-10
+```
+
+**Descrição:**
+
+Configurar o projeto frontend com React 18, TypeScript, Vite, TailwindCSS e Zustand. Criar a estrutura de pastas, configuração do Axios para comunicação com a API, e a base de navegação com React Router.
+
+**Arquivos a criar/editar:**
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   └── Layout.tsx          ← layout base com header/footer
+│   ├── pages/
+│   │   └── Home.tsx            ← página inicial placeholder
+│   ├── hooks/
+│   │   └── useAuth.ts          ← hook de autenticação (store Zustand)
+│   ├── services/
+│   │   └── api.ts              ← instância Axios configurada com baseURL e interceptors
+│   ├── store/
+│   │   └── authStore.ts        ← Zustand store para auth state
+│   ├── types/
+│   │   ├── game.ts             ← tipos alinhados com schemas do backend
+│   │   └── auth.ts             ← tipos de auth (TokenResponse, User)
+│   ├── App.tsx                 ← React Router + routes
+│   ├── main.tsx                ← entry point
+│   └── index.css               ← TailwindCSS base
+├── .env.example                ← VITE_API_URL=http://localhost:8000/api/v1
+├── vite.config.ts
+├── tailwind.config.js
+├── tsconfig.json
+├── package.json
+└── eslint.config.js
+```
+
+**Critérios de Aceitação:**
+
+- [ ] `npm run dev` inicia o frontend em `localhost:5173` sem erros
+- [ ] Axios configurado com `baseURL` lido de `VITE_API_URL`
+- [ ] Interceptor de request adiciona `Authorization: Bearer` se token existir no store
+- [ ] Interceptor de response trata 401 (limpa token e redireciona para login)
+- [ ] React Router configurado com rotas: `/`, `/search`, `/games/:slug`, `/login`, `/register`
+- [ ] Layout base renderiza header com logo e navegação
+- [ ] `npm run build` gera bundle sem erros de TypeScript
+- [ ] ESLint configurado e passando sem erros
+
+**Não fazer:**
+- Não implementar páginas completas aqui (apenas placeholders com routing)
+- Não adicionar SSR ou Next.js — SPA puro com Vite
+- Não instalar dependências além das listadas na stack
+
+---
+
+### CARD-19
+
+```
+Tipo: Task
+Épico: EPIC-7
+Prioridade: High
+Labels: frontend, feature
+Summary: feat(frontend): implementar página de busca e listagem de jogos
+Depende de: CARD-18
+```
+
+**Descrição:**
+
+Implementar a página principal do LootPrice: campo de busca com resultados em tempo real e listagem paginada de jogos. Cada card de jogo exibe título, imagem de capa, menor preço entre as lojas e badge de desconto.
+
+**Arquivos a criar/editar:**
+
+```
+frontend/
+└── src/
+    ├── components/
+    │   ├── SearchBar.tsx        ← input de busca com debounce
+    │   ├── GameCard.tsx         ← card individual de jogo
+    │   └── Pagination.tsx       ← componente de paginação
+    ├── pages/
+    │   ├── Home.tsx             ← listagem paginada com busca
+    │   └── Search.tsx           ← resultados de busca
+    └── services/
+        └── gameService.ts       ← funções: searchGames(), listGames(), getGameBySlug()
+```
+
+**Critérios de Aceitação:**
+
+- [ ] Campo de busca com debounce de 300ms (não dispara request a cada tecla)
+- [ ] Resultados de busca exibem: título, capa, menor preço, loja do menor preço
+- [ ] Paginação funcional com navegação entre páginas
+- [ ] Estado de loading visível durante requests
+- [ ] Estado de "nenhum resultado" exibido para buscas sem match
+- [ ] Validação com Zod nos dados recebidos da API
+- [ ] Layout responsivo (mobile-first)
+- [ ] Cards clicáveis redirecionam para `/games/:slug`
+
+**Não fazer:**
+- Não implementar filtros avançados (por loja, faixa de preço) no MVP
+- Não implementar infinite scroll — paginação tradicional é suficiente
+
+---
+
+### CARD-20
+
+```
+Tipo: Task
+Épico: EPIC-7
+Prioridade: High
+Labels: frontend, auth, feature
+Summary: feat(frontend): implementar páginas de login e registro
+Depende de: CARD-18
+```
+
+**Descrição:**
+
+Criar as páginas de autenticação: login local, registro e botões de login social (Google e Discord). Integrar com o Zustand auth store para gerenciar estado de sessão.
+
+**Arquivos a criar/editar:**
+
+```
+frontend/
+└── src/
+    ├── pages/
+    │   ├── Login.tsx            ← formulário de login + botões OAuth
+    │   └── Register.tsx         ← formulário de registro
+    ├── components/
+    │   ├── AuthForm.tsx         ← formulário reutilizável (login/register)
+    │   └── OAuthButtons.tsx     ← botões Google e Discord
+    └── hooks/
+        └── useAuth.ts           ← atualizar com funções login(), register(), logout()
+```
+
+**Critérios de Aceitação:**
+
+- [ ] Formulário de login com validação client-side (React Hook Form + Zod)
+- [ ] Formulário de registro com validação (email válido, senha mínima 8 caracteres)
+- [ ] Botões de login social (Google, Discord) redirecionam para as rotas OAuth do backend
+- [ ] Token armazenado no Zustand store e persistido em `localStorage`
+- [ ] Refresh token gerenciado automaticamente (interceptor Axios)
+- [ ] Feedback visual: erro de credenciais, email duplicado, sucesso
+- [ ] Após login bem-sucedido, redireciona para a página anterior ou home
+- [ ] Usuário autenticado vê seu email/nome no header em vez de "Login"
+
+**Não fazer:**
+- Não armazenar tokens em cookies (usar localStorage para simplicidade no MVP)
+- Não implementar "esqueci minha senha" no MVP
+
+---
+
+### CARD-21
+
+```
+Tipo: Task
+Épico: EPIC-7
+Prioridade: High
+Labels: frontend, feature
+Summary: feat(frontend): implementar página de detalhe do jogo com comparação de preços
+Depende de: CARD-19
+```
+
+**Descrição:**
+
+Implementar a página de detalhe de um jogo (`/games/:slug`), exibindo todos os preços disponíveis ordenados do menor ao maior, com links diretos para compra em cada loja. Esta é a página que entrega a proposta de valor central do LootPrice.
+
+**Arquivos a criar/editar:**
+
+```
+frontend/
+└── src/
+    ├── pages/
+    │   └── GameDetail.tsx       ← detalhe do jogo com tabela de preços
+    ├── components/
+    │   ├── PriceTable.tsx        ← tabela/lista de preços por loja
+    │   └── PriceBadge.tsx        ← badge visual de desconto (ex: "-75%")
+    └── types/
+        └── game.ts              ← atualizar GameWithPrices type
+```
+
+**Critérios de Aceitação:**
+
+- [ ] Exibe título, capa e todos os preços do jogo
+- [ ] Preços ordenados do menor para o maior (destaque visual no menor)
+- [ ] Cada preço exibe: nome da loja, preço atual, preço original (se em desconto), % de desconto
+- [ ] Botão "Comprar" em cada linha redireciona para a `affiliate_url` da loja (abre em nova aba)
+- [ ] Exibe timestamp "Atualizado há X minutos" baseado no `scraped_at`
+- [ ] Jogos indisponíveis (`is_available = false`) exibidos com visual de desabilitado
+- [ ] Página retorna 404 amigável se slug não existir
+- [ ] Layout responsivo
+
+**Não fazer:**
+- Não implementar gráfico de histórico de preços (Fase 3)
+- Não implementar botão de "adicionar à wishlist" (Fase 2)
 
 ---
 
@@ -926,8 +1205,8 @@ CARD-01 (Setup)
 
 Ao processar este arquivo para criar cards no Jira:
 
-1. Criar um Épico para cada seção `## EPIC-N`
-2. Criar uma Issue do tipo `Task` para cada `### CARD-N`
+1. Criar um Épico para cada seção `## EPIC-N` (total: 7 épicos)
+2. Criar uma Issue do tipo `Task` para cada `### CARD-N` (total: 21 cards)
 3. Preencher `summary` com o valor do campo `Summary:` no card
 4. Preencher `description` com todo o conteúdo do card em Markdown
 5. Definir `priority` conforme o campo `Prioridade:`

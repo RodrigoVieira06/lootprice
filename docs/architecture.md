@@ -346,7 +346,7 @@ prices
   price_brl         -- NUMERIC(10,2)
   original_price_brl (nullable)  -- Para calcular % de desconto
   discount_percent (nullable)
-  url               -- Link direto para compra (afiliado futuro)
+  affiliate_url     -- Link direto para compra (afiliado futuro)
   is_available: bool
   scraped_at        -- Timestamp da última coleta
 
@@ -525,7 +525,7 @@ Retorna JWT (mesmo formato do login local)
 
 ```env
 # .env.example
-DATABASE_URL=postgresql://user:pass@localhost:5432/lootprice
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/lootprice
 SECRET_KEY=<gerado com: openssl rand -hex 32>
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
@@ -548,15 +548,17 @@ Todo crawler deve herdar de `BaseCrawler` e implementar o método `fetch()`:
 # backend/app/crawlers/base.py
 
 from abc import ABC, abstractmethod
+from decimal import Decimal
 from pydantic import BaseModel
 from typing import AsyncGenerator
 
 class RawGameData(BaseModel):
     title: str
-    price_brl: float
-    original_price_brl: float | None = None
-    url: str
+    price_brl: Decimal                    # Nunca float
+    original_price_brl: Decimal | None = None
+    affiliate_url: str
     is_available: bool = True
+    store_slug: str                       # "steam" | "nuuvem"
 
 class BaseCrawler(ABC):
     store_slug: str  # Obrigatório nas subclasses
