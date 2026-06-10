@@ -67,8 +67,8 @@ jobs:
           PR_BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           PR_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           DIFF_SIZE: ${{ steps.diff.outputs.diff_size }}
+        shell: python
         run: |
-          python3 << 'PYTHON_SCRIPT'
           import os
           import json
           import requests
@@ -242,18 +242,14 @@ Se não houver bloqueios, escreva: *Nenhum bloqueio identificado.*)
 
           print("✅ Review gerado com sucesso.")
           print(f"Tamanho do review: {len(review_text)} chars")
-          PYTHON_SCRIPT
 
       - name: Postar review como comentário no PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+        shell: python
         run: |
-          REVIEW_BODY=$(cat /tmp/ai_review.md)
-          
-          # Escapar o JSON corretamente
-          python3 -c "
           import json, os, sys, requests
 
           token = os.environ['GITHUB_TOKEN']
@@ -273,8 +269,7 @@ Se não houver bloqueios, escreva: *Nenhum bloqueio identificado.*)
 
           response = requests.post(url, json=payload, headers=headers, timeout=30)
           response.raise_for_status()
-          print(f'✅ Comentário postado no PR #{pr_number}: {response.json()[\"html_url\"]}')
-          "
+          print(f'✅ Comentário postado no PR #{pr_number}: {response.json()["html_url"]}')
 
       - name: Verificar se review bloqueou o PR
         run: |
