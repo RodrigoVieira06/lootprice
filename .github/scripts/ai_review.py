@@ -6,6 +6,7 @@ Chamado pelo workflow .github/workflows/ai-review.yml.
 import os
 import json
 import sys
+import time
 import requests
 
 
@@ -125,7 +126,7 @@ def main():
         "Questões sobre o review? Fale com o mantenedor do repositório.*\n"
     )
 
-    # Chama a API do Gemini
+    # Chama a API do Gemini com retry + exponential backoff para erros 429
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"gemini-2.0-flash:generateContent?key={api_key}"
@@ -139,8 +140,33 @@ def main():
         },
     }
 
-    response = requests.post(url, json=payload, timeout=120)
-    response.raise_for_status()
+    MAX_RETRIES = 5
+    BASE_DELAY = 15  # segundos — respeita o rate limit do tier gratuito do Gemini
+
+    for attempt in range(1, MAX_RETRIES + 1):
+        print(f"🔄 Tentativa {attempt}/{MAX_RETRIES} — chamando Gemini API...")
+        response = requests.post(url, json=payload, timeout=120)
+
+        if response.status_code == 429:
+            # Respeita o cabeçalho Retry-After se presente, senão usa backoff exponencial
+            retry_after = response.headers.get("Retry-After")
+            if retry_after:
+                wait = int(retry_after)
+                print(f"⏳ Rate limit atingido. API solicitou aguardar {wait}s (Retry-After).")
+            else:
+                wait = BASE_DELAY * (2 ** (attempt - 1))  # 15s, 30s, 60s, 120s, 240s
+                print(f"⏳ Rate limit atingido (429). Aguardando {wait}s antes de tentar novamente...")
+
+            if attempt == MAX_RETRIES:
+                print("❌ Todas as tentativas esgotadas. Verifique a quota da GEMINI_API_KEY.")
+                response.raise_for_status()
+
+            time.sleep(wait)
+            continue
+
+        # Para qualquer outro erro HTTP, falha imediatamente
+        response.raise_for_status()
+        break  # Sucesso — sai do loop
 
     result = response.json()
     review_text = result["candidates"][0]["content"]["parts"][0]["text"]
