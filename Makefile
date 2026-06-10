@@ -15,7 +15,7 @@ help:
 	@echo "  make format   - Executa o formatador Ruff"
 
 install:
-	$(PYTHON) -m venv $(VENV)
+	virtualenv $(VENV)
 	$(ACTIVATE) && $(PIP) install -r backend/requirements.txt
 	@if command -v lefthook > /dev/null; then \
 		lefthook install; \

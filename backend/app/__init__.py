@@ -1,0 +1,1 @@
+# LootPrice app package
