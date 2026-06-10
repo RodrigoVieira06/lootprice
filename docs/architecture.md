@@ -159,7 +159,7 @@ Mesmo no MVP, adicione `slowapi` (rate limiting para FastAPI) antes do primeiro 
 | Rate Limiting | slowapi | Middleware de throttling nativo para FastAPI |
 | Ambiente | Ubuntu nativo (i7 10ª, 8GB RAM) via SSH | Máquina própria — hardware superior à maioria das VPS nessa faixa de preço |
 
-> **⚠️ Nota `python-jose`:** Biblioteca ativa no MVP. Monitorar atividade de manutenção — se inativa por 6+ meses, migrar para `PyJWT` + `authlib`. Registrado como DT-02 em `llm_context.md`.
+> **⚠️ Nota `python-jose`:** Biblioteca ativa no MVP. Monitorar atividade de manutenção — se inativa por 6+ meses, migrar para `PyJWT` + `authlib`. Registrado como DT-02 em `docs/project_state.md`.
 
 ### Banco de Dados & Infraestrutura
 
@@ -203,14 +203,26 @@ lootprice/                          # Raiz do Monorepo
 │
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml                  # Lint + Testes em cada Push/PR
-│   │   └── pr-review.yml           # Gatilho para revisão automática via MCP
-│   └── PULL_REQUEST_TEMPLATE.md
+│   │   └── ci.yml                  # Lint + Testes em cada Push/PR
+│   └── PULL_REQUEST_TEMPLATE.md    # Template para IAs que abrem PRs
+│
+├── ai/
+│   ├── README.md                   # Índice das ferramentas de IA do projeto
+│   ├── developer/
+│   │   ├── SKILL.md                # Skill: transforma IA CLI em dev sênior do LootPrice
+│   │   └── resources/
+│   │       ├── stack.md            # Referência: stack completa + variáveis de ambiente
+│   │       └── workflow.md         # Referência: workflow de 9 passos + padrões
+│   └── reviewer/
+│       ├── SKILL.md                # Skill: transforma IA CLI em revisor do LootPrice
+│       └── resources/
+│           ├── checklist.md        # Checklist de conformidade com as regras do projeto
+│           └── review_format.md    # Formato exato do review em markdown
 │
 ├── docs/
 │   ├── architecture.md             # Este documento
 │   ├── database_schema.md          # Modelagem detalhada do banco
-│   ├── llm_context.md              # Contexto vivo para LLMs (atualizar ao fim de cada sessão)
+│   ├── project_state.md            # Estado vivo do projeto (cards, decisões, última sessão)
 │   ├── project_cards.md            # 23 cards do Jira com critérios de aceitação
 │   ├── api_contracts.md            # Exemplos de request/response de cada rota
 │   └── crawler_guide.md            # Como adicionar um novo crawler
@@ -692,12 +704,14 @@ Esta seção descreve como as ferramentas de IA são integradas ao workflow de d
 **Casos de uso práticos:**
 
 ```
-Prompt: "Cria uma issue para adicionar suporte ao crawler da Fanatical, 
+Prompt: "Cria uma issue para adicionar suporte ao crawler da Fanatical,
          label 'crawler', milestone 'Fase 2'"
 
-Prompt: "Revisa o PR #14 e aponta problemas de segurança ou ausência de testes"
+Prompt: "@reviewer revisar PR #14"
+        → A skill ai/reviewer/SKILL.md analisa o diff, aplica o checklist do projeto
+          e posta o review estruturado como comentário no PR
 
-Prompt: "Lista todos os PRs abertos e me diz quais estão sem reviewer"
+Prompt: "Lista todos os PRs abertos e me diz quais estão sem review"
 ```
 
 **Setup necessário:** Token de acesso pessoal do GitHub com permissões `repo` + MCP Server configurado no Cursor/Claude Desktop.
@@ -755,10 +769,10 @@ Prompt: "Tira screenshot do estado atual e analisa o contraste de cores"
 
 ### Workflows do GitHub Actions
 
-| Arquivo | Gatilho | Finalidade |
+| Arquivo / Ferramenta | Gatilho | Finalidade |
 |---|---|---|
-| `ci.yml` | PR para `master`, push na `master` | Lint (Ruff) + Testes (Pytest) + Build React |
-| `ai-review.yml` | PR aberto/atualizado para `master` | Review automático por Gemini 2.0 Flash — posta nota, bloqueios e sugestões como comentário |
+| `ci.yml` | PR para `master`, push na `master` | Lint (Ruff) + Testes (Pytest) |
+| `ai/reviewer/SKILL.md` | Manual — IA invoca via chat | Review especializado por IA CLI com MCP GitHub — analisa diff, aplica checklist do projeto, posta comentário no PR |
 
 ### Pipeline CI (`ci.yml`)
 
@@ -790,27 +804,35 @@ jobs:
       - npm run build
 ```
 
-### Workflow de AI Review (`ai-review.yml`)
+### Fluxo de AI Review via Skill
 
-Acionado automaticamente ao abrir ou atualizar qualquer PR para `main`.
+O review de código por IA é feito **manualmente** — invocando a skill `ai/reviewer/SKILL.md`
+em qualquer IA CLI com MCP GitHub configurado (Antigravity IDE, Claude Code, Gemini CLI, Cursor).
 
 **Fluxo:**
 ```
-PR aberto/atualizado
+PR aberto pela IA ou desenvolvedor
      │
      ▼
-git diff (base..head)         ← diff das alterações
+Desenvolvedor ou IA invoca a skill:
+"@reviewer revisar PR #<N>"
      │
      ▼
-Lê llm_context.md             ← regras do projeto
-  + architecture.md           ← contexto arquitetural
+Skill lê ai/developer/SKILL.md        ← regras rígidas do projeto
+       + docs/architecture.md      ← contexto arquitetural
+       + ai/reviewer/resources/    ← checklist + formato
      │
      ▼
-Gemini 2.0 Flash API          ← modelo gratuito via GEMINI_API_KEY
-(prompt em português)
+MCP GitHub: get_pull_request()     ← busca título, descrição, diff
+          + get_pull_request_files()  ← lista arquivos alterados
+          + get_pull_request_status() ← verifica status do CI
      │
      ▼
-Posta comentário no PR        ← via GITHUB_TOKEN (automático)
+IA analisa o diff com base no checklist
+e gera review no formato padrão
+     │
+     ▼
+MCP GitHub: add_issue_comment()    ← posta review como comentário no PR
      │
      ▼
 Review contém:
@@ -850,9 +872,12 @@ refactor/<card-id>-descricao  test/<card-id>-descricao
 ### Branch Protection Rules (GitHub UI — `master`)
 
 - ✅ Require pull request before merging
-- ✅ Require status checks: `ci / Backend (Python)`, `ci / Frontend (React/TypeScript)`, `AI Code Review — LootPrice`
+- ✅ Require status checks: `ci / Backend (Python)`, `ci / Frontend (React/TypeScript)`
 - ✅ Dismiss stale reviews on new commits
 - ✅ Block direct pushes (configurado nas regras de Branch Protection do GitHub)
+
+> **Nota:** O review por IA não é um status check automático. É feito manualmente via
+> `ai/reviewer/SKILL.md` antes do merge — o desenvolvedor confere o comentário postado no PR.
 
 ### Git Hooks (Lefthook)
 
@@ -960,4 +985,8 @@ refactor(normalizer): extrai lógica de slug para utilitário separado
 
 ---
 
-> **Instrução para LLMs:** Este documento é a fonte de verdade de arquitetura do projeto LootPrice. Ao receber tarefas de desenvolvimento, consulte este arquivo para entender convenções de nomenclatura, estrutura de pastas, contratos de API e regras de negócio. Nunca assuma convenções que não estejam documentadas aqui. Em caso de conflito entre este documento e o código, sinalize a inconsistência antes de agir.
+> **Instrução para LLMs:** Este documento é a fonte de verdade de arquitetura do projeto LootPrice.
+> Ao receber tarefas de desenvolvimento, carregue primeiro `ai/developer/SKILL.md` para entender regras e workflow,
+> e `docs/project_state.md` para o estado atual do projeto.
+> Consulte este arquivo para entender convenções de nomenclatura, estrutura de pastas, contratos de API e decisões arquiteturais.
+> Em caso de conflito entre este documento e o código, sinalize a inconsistência antes de agir.

@@ -1,6 +1,16 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  INSTRUÇÃO PARA IAs QUE ESTÃO ABRINDO ESTE PR                  ║
+  ║                                                                  ║
+  ║  Antes de enviar, preencha TODOS os campos abaixo com base     ║
+  ║  no trabalho realizado. Não deixe campos vazios ou com valores  ║
+  ║  de placeholder. Remova os comentários HTML após preencher.    ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+
 ## 📋 Card Relacionado
 
-<!-- Obrigatório: vincule o card do Jira -->
+<!-- Obrigatório: vincule o card do Jira e do GitHub Issue correspondente -->
 - Jira: [LP-XX](https://lootprice.atlassian.net/browse/LP-XX)
 - Card: CARD-XX — Descrição breve do card
 
@@ -8,7 +18,9 @@
 
 ## 🧾 O que foi feito
 
-<!-- Descreva em linguagem simples o que este PR implementa ou corrige -->
+<!-- Descreva em linguagem simples o que este PR implementa ou corrige.
+     Use bullet points. Seja específico: mencione arquivos criados, funções implementadas,
+     decisões tomadas e o motivo de cada uma. Não use linguagem vaga como "melhorias gerais". -->
 
 -
 -
@@ -18,7 +30,7 @@
 
 ## 🔗 Tipo de Mudança
 
-<!-- Marque com [x] o que se aplica -->
+<!-- Marque com [x] o que se aplica — pode ser mais de um -->
 
 - [ ] `feat` — Nova funcionalidade
 - [ ] `fix` — Correção de bug
@@ -33,7 +45,7 @@
 
 ## ✅ Checklist do Desenvolvedor
 
-**Antes de abrir o PR, confirme:**
+<!-- Marque com [x] cada item verificado. Se um item não se aplica a este PR, marque [x] e escreva N/A após. -->
 
 ### Backend (Python/FastAPI)
 - [ ] Rotas FastAPI usam `async/await`
@@ -53,18 +65,7 @@
 ### Geral
 - [ ] Título do PR segue Conventional Commits (`feat(auth): ...`)
 - [ ] CI passou (lint + testes)
-- [ ] `docs/llm_context.md` atualizado se houve decisão técnica nova
-- [ ] Revisão da IA concluída com nota (grade) registrada nos comentários do PR
-- [ ] Nota de qualidade do PR é satisfatória (desejável >= 8/10) e todos os bloqueios da IA resolvidos
-
----
-
-## 🤖 Nota para a IA Revisora
-
-<!-- NÃO EDITAR — instrução automática para o bot de review -->
-> Este PR deve ser revisado pelo workflow `ai-review.yml`.
-> O review automático acontecerá em instantes após a abertura do PR.
-> Verifique os comentários automáticos antes de solicitar aprovação humana.
+- [ ] `docs/project_state.md` atualizado se houve decisão técnica nova
 
 ---
 
@@ -76,4 +77,6 @@
 
 ## 💬 Contexto Adicional
 
-<!-- Qualquer informação que o revisor (humano ou IA) deva saber -->
+<!-- Qualquer informação que o revisor humano deva saber:
+     trade-offs considerados, alternativas descartadas, débitos técnicos criados,
+     dependências de outros cards, etc. -->
