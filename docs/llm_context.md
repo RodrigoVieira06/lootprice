@@ -9,11 +9,11 @@
 
 | Campo | Valor |
 |---|---|
-| **Versão** | 0.1.4 |
-| **Última atualização** | 2026-06-09 |
-| **Atualizado por** | Claude Sonnet 4.6 (Thinking) via Antigravity IDE |
-| **Fase atual** | Desenvolvimento — CARD-01 em andamento (não iniciado fisicamente) |
-| **Próximo card** | CARD-01: Setup inicial do repositório (Aguardando implementação física) |
+| **Versão** | 0.1.5 |
+| **Última atualização** | 2026-06-10 |
+| **Atualizado por** | Gemini 3.5 Flash (High) via Antigravity IDE |
+| **Fase atual** | Desenvolvimento — CARD-01 em andamento na branch `chore/card-01-monorepo-setup` |
+| **Próximo card** | CARD-02: configurar pipeline CI com GitHub Actions [LP-14] |
 
 ---
 
@@ -29,6 +29,7 @@ Ao final de **qualquer sessão** onde ocorreu pelo menos um dos seguintes:
 - Uma decisão técnica foi tomada (mesmo que seja "decidimos não fazer X")
 - Um bug relevante foi encontrado ou resolvido
 - A stack, o schema ou os contratos de API mudaram
+- A branch de desenvolvimento mudou
 
 ### O que atualizar
 
@@ -214,12 +215,31 @@ docs/
 ### [ATUALIZÁVEL] Arquivos do Backend
 ```
 backend/
-└── (nenhum arquivo criado ainda)
+├── app/
+│   ├── __init__.py       ✅ Criado
+│   ├── api/
+│   │   └── __init__.py   ✅ Criado
+│   ├── core/
+│   │   └── __init__.py   ✅ Criado
+│   ├── models/
+│   │   └── __init__.py   ✅ Criado
+│   ├── schemas/
+│   │   └── __init__.py   ✅ Criado
+│   └── crawlers/
+│       └── __init__.py   ✅ Criado
+├── tests/
+│   ├── __init__.py       ✅ Criado
+│   └── test_main.py      ✅ Criado
+├── .env                  ✅ Criado (ignorado pelo git)
+├── .env.example          ✅ Criado
+├── main.py               ✅ Criado
+├── requirements.txt      ✅ Atualizado com todas as dependências do MVP
+└── ruff.toml             ✅ Criado
 ```
 
 ### [ATUALIZÁVEL] Arquivos de Infraestrutura
 ```
-(nenhum arquivo criado ainda)
+docker-compose.yml        ✅ Criado — PostgreSQL v15 local bound only to 127.0.0.1
 ```
 
 ---
@@ -229,7 +249,7 @@ backend/
 ### Cards em Progresso
 ```
 CARD-01: chore(infra): setup inicial do repositório monorepo [LP-12]
-  → Iniciado em 2026-06-02. Próximo passo: criar estrutura física de pastas e arquivos base.
+  → Iniciado em 2026-06-02. Em andamento na branch `chore/card-01-monorepo-setup`. Estrutura de pastas, pacotes python, .env, docker-compose e dependências criadas e testadas.
 ```
 
 ### Cards Concluídos
@@ -352,6 +372,8 @@ class BaseCrawler(ABC):
 | 2026-06-09 | CARD-23 rebaixado para prioridade Low; `get_real_ip()` movida para CARD-17 | Sem Cloudflare ativo, CARD-23 não pode ser testado. A função `get_real_ip()` é útil para qualquer proxy e deve ser implementada no CARD-17 | Executar CARD-23 agora descartado — depende de domínio |
 | 2026-06-10 | Sistema de AI Code Review via GitHub Actions implementado | Necessidade de garantir qualidade e rastreabilidade com desenvolvimento assistido por IA; nenhuma IA deve burlar o fluxo de PR | CodeRabbit SaaS descartado (repo privado = pago); Claude API descartada (sem key separada) — Gemini free tier suficiente |
 | 2026-06-10 | CARD-24 criado: feat(ci): sistema de AI code review | Infra transversal criada via `ai-review.yml`, `ci.yml`, `branch-check.yml`, `PULL_REQUEST_TEMPLATE.md` e seção 3.1 em `llm_context.md` | Repo separado para o bot descartado — workflow dentro do projeto é o padrão da indústria |
+| 2026-06-10 | Uso do `virtualenv` local | PEP 668 bloqueou pip --user e system python-venv estava ausente. Resolvido instalando pip via bootstrap e executando virtualenv para isolamento total. | Instalação global com sudo apt-get (bloqueado por senha sudo). |
+| 2026-06-10 | Vinculação do PostgreSQL apenas no 127.0.0.1 em docker-compose | Garantia de segurança conforme o skill de secure web backend, impedindo escuta do banco em 0.0.0.0 (todos os IPs). | Expor na porta pública 5432 de forma global. |
 
 ---
 
@@ -396,7 +418,7 @@ VITE_API_URL=http://localhost:8000/api/v1
 ## 12. Comandos Frequentes (Referência Rápida)
 
 ```bash
-make install                            # Instala deps + configura Lefthook
+make install                            # Instala deps + configura virtualenv
 make dev                                # Sobe banco + inicia FastAPI
 make db-seed                            # Popula tabela stores
 make migrate                            # Aplica migrations pendentes
@@ -436,9 +458,9 @@ make crawl                              # Executa todos os crawlers
 **Estado ao encerrar:** Nenhum código implementado. Toda a sessão foi de planejamento e documentação. Pronto para iniciar CARD-01.
 
 **O que fazer na próxima sessão:**
-1. Fornecer este arquivo + `docs/project_cards.md` como contexto
-2. Executar CARD-01: setup do repositório
-3. Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas, `main.py` vazio
+- Fornecer este arquivo + `docs/project_cards.md` como contexto
+- Executar CARD-01: setup do repositório
+- Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas, `main.py` vazio
 
 ### Sessão de Revisão
 
@@ -469,9 +491,9 @@ make crawl                              # Executa todos os crawlers
 **Estado ao encerrar:** Nenhum código implementado. Documentação revisada e corrigida. Pronto para iniciar CARD-01.
 
 **O que fazer na próxima sessão:**
-1. Fornecer este arquivo + `docs/project_cards.md` como contexto
-2. Executar CARD-01: setup do repositório
-3. Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas, `main.py` vazio
+- Fornecer este arquivo + `docs/project_cards.md` como contexto
+- Executar CARD-01: setup do repositório
+- Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas, `main.py` vazio
 
 ### Sessão de Criação de Cards no Jira
 
@@ -509,9 +531,9 @@ make crawl                              # Executa todos os crawlers
 **Estado ao encerrar:** CARD-01 (`LP-12`) em andamento. Estrutura básica de pastas e arquivos configurados no Jira para acompanhamento. Pronto para começar a escrever código.
 
 **O que fazer na próxima sessão:**
-1. Criar a estrutura inicial do monorepo (Makefile, Lefthook, docker-compose.yml, backend/app, main.py).
-2. Garantir que os testes iniciais e linter (Ruff) passem localmente.
-3. Concluir o card e movê-lo para a fase de revisão/teste.
+- Criar a estrutura inicial do monorepo (Makefile, Lefthook, docker-compose.yml, backend/app, main.py).
+- Garantir que os testes iniciais e linter (Ruff) passem localmente.
+- Concluir o card e movê-lo para a fase de revisão/teste.
 
 ### Sessão de Avaliação de Infraestrutura e Revisão do Plano
 
@@ -536,9 +558,9 @@ make crawl                              # Executa todos os crawlers
 - Produção futura: migrar para VPS apenas quando houver necessidade de uptime garantido
 
 **O que fazer na próxima sessão:**
-1. Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
-2. Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
-3. Mover LP-12 para "Concluído" no Jira após setup
+- Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
+- Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
+- Mover LP-12 para "Concluído" no Jira após setup
 
 ### Sessão de Análise de Infraestrutura — Cloudflare e Cards
 
@@ -565,10 +587,37 @@ make crawl                              # Executa todos os crawlers
 **Estado ao encerrar:** Nenhum código implementado. CARD-01 ainda não foi executado fisicamente. Análise de infra consolidada.
 
 **O que fazer na próxima sessão:**
-1. Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
-2. Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
-3. Mover LP-12 para "Concluído" no Jira após setup
-4. No CARD-17, implementar `get_real_ip()` que lê `X-Forwarded-For` (preparado para proxy futuro)
+- Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
+- Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
+- Mover LP-12 para "Concluído" no Jira após setup
+- No CARD-17, implementar `get_real_ip()` que lê `X-Forwarded-For` (preparado para proxy futuro)
+
+### Sessão de Setup Inicial do Repositório (CARD-01)
+
+**Data:** 2026-06-10
+**LLM:** Gemini 3.5 Flash (High)
+**Duração:** Setup de Infra e Dependências
+
+**O que foi feito:**
+- Branch `chore/card-01-monorepo-setup` criada.
+- Arquivo `backend/requirements.txt` atualizado com a stack completa (fastapi, sqlmodel, alembic, pydantic-settings, asyncpg, etc.).
+- Pacotes python criados sob `backend/app/` (`api`, `core`, `models`, `schemas`, `crawlers`) e `backend/tests/` com arquivos `__init__.py`.
+- Criados os arquivos `backend/.env.example` e o local `backend/.env` (este com uma SECRET_KEY criptograficamente segura gerada via python `secrets`).
+- Criado o arquivo `docker-compose.yml` pré-configurado para rodar PostgreSQL 15, limitado ao endereço local `127.0.0.1` para conformidade de segurança.
+- Criada venv usando `virtualenv` após habilitar pip em modo de usuário e ajustada a regra de instalação no `Makefile`.
+- Verificado `make test` (1 passed) e `make lint` (ruff check passed).
+- Testada inicialização manual do servidor FastAPI (`uvicorn` local) e verificado que a rota de documentação `/docs` está ativa e retornando HTTP 200.
+
+**Decisões tomadas nesta sessão:**
+- Utilizar `virtualenv` para contornar PEP 668 (externally managed environment) na máquina local.
+- Limitar escuta do banco de dados ao localhost (`127.0.0.1`) no compose para segurança avançada de desenvolvimento.
+
+**Estado ao encerrar:** Estrutura física do monorepo concluída e verificada localmente. Pronto para que o Docker seja configurado ou instalado pelo usuário no host, e posterior submissão do PR do CARD-01.
+
+**O que fazer na próxima sessão:**
+- Resolver instalação do Docker no host Ubuntu para rodar o PostgreSQL.
+- Abrir Pull Request e mover o card para "Revisando" no Jira.
+- Proceder para o CARD-02 (Configuração de CI no GitHub Actions).
 
 ---
 

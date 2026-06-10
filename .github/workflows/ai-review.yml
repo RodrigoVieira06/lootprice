@@ -1,6 +1,6 @@
 name: AI Code Review — LootPrice
 
-on:
+"on":
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [master]
@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   ai-review:
-    name: Revisão de Código por IA (Gemini)
+    name: Revisão de Código por IA (Groq — Llama 3.3 70B)
     runs-on: ubuntu-latest
 
     # Permissões necessárias para postar comentários no PR
@@ -49,17 +49,15 @@ jobs:
           echo "Tamanho do diff: $DIFF_SIZE bytes"
 
       - name: Ler arquivos de contexto do projeto
-        id: context
         run: |
           # Lê os arquivos de contexto e limita tamanho para não exceder limite da API
           head -c 8000 docs/llm_context.md > /tmp/llm_context_trunc.txt
           head -c 6000 docs/architecture.md > /tmp/architecture_trunc.txt
           echo "Contexto carregado."
 
-      - name: Executar AI Review via Gemini API
-        id: review
+      - name: Executar AI Review via Groq API
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
@@ -67,209 +65,14 @@ jobs:
           PR_BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           PR_HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           DIFF_SIZE: ${{ steps.diff.outputs.diff_size }}
-        shell: python
-        run: |
-          import os
-          import json
-          import requests
-
-          # Lê variáveis
-          api_key = os.environ["GEMINI_API_KEY"]
-          pr_title = os.environ["PR_TITLE"]
-          pr_number = os.environ["PR_NUMBER"]
-          pr_author = os.environ["PR_AUTHOR"]
-          pr_body = os.environ.get("PR_BODY", "")
-          pr_base = os.environ["PR_BASE_BRANCH"]
-          pr_head = os.environ["PR_HEAD_BRANCH"]
-          diff_size = int(os.environ.get("DIFF_SIZE", "0"))
-
-          # Lê arquivos
-          with open("/tmp/pr_diff_truncated.txt", "r", encoding="utf-8", errors="replace") as f:
-              diff_content = f.read()
-
-          with open("/tmp/llm_context_trunc.txt", "r", encoding="utf-8", errors="replace") as f:
-              llm_context = f.read()
-
-          with open("/tmp/architecture_trunc.txt", "r", encoding="utf-8", errors="replace") as f:
-              architecture = f.read()
-
-          truncated_note = ""
-          if diff_size > 15000:
-              truncated_note = f"\n> ⚠️ *Diff truncado: {diff_size} bytes totais, analisados os primeiros 15.000 bytes.*\n"
-
-          prompt = f"""Você é um revisor de código sênior do projeto **LootPrice**.
-          
-Seu papel é revisar Pull Requests com rigor técnico, segurança e alinhamento com as regras do projeto.
-A resposta DEVE ser em **português brasileiro**.
-
-## Contexto do Projeto
-
-### Arquivo llm_context.md (resumo):
-{llm_context}
-
-### Arquivo architecture.md (resumo):
-{architecture}
-
----
-
-## Pull Request a Revisar
-
-- **PR #{pr_number}:** {pr_title}
-- **Autor:** {pr_author}
-- **Branch:** `{pr_head}` → `{pr_base}`
-- **Descrição do PR:**
-{pr_body if pr_body else "(sem descrição)"}
-
-## Diff das Alterações:
-```diff
-{diff_content}
-```
-{truncated_note}
-
----
-
-## Sua Tarefa
-
-Analise o diff acima e produza um review estruturado EXATAMENTE no formato abaixo.
-Seja direto, técnico e construtivo. Se algo estiver correto, diga que está correto.
-Se houver problemas graves, aponte claramente como BLOQUEIO.
-
-### Critério de Nota (Controle de Qualidade):
-Atribua uma nota de 0 a 10 para o PR:
-- **10/10**: Código impecável, sem sugestões ou bloqueios.
-- **8/10 a 9/10**: Código bom, funcional, sem bloqueios, com pequenas sugestões não-impeditivas.
-- **7/10**: Código aceitável, mas com sugestões importantes de melhoria.
-- **Abaixo de 7/10**: Código com problemas significativos, bugs potenciais ou descumprimento de regras (provoca bloqueio).
-
----
-
-## Formato do Review (use EXATAMENTE esta estrutura em markdown):
-
-## 🤖 AI Code Review — LootPrice
-
-**PR #{pr_number} — {pr_title}**
-**Revisor:** Gemini AI | **Data:** (data atual)
-
----
-
-### 📊 Nota Geral: X/10
-
-> Justificativa resumida da nota em 1-2 frases.
-
----
-
-### ✅ Pontos Positivos
-
-(Liste o que foi bem feito. Se nada se destacar positivamente, omita esta seção.)
-
----
-
-### 🚨 Bloqueios — Devem ser corrigidos ANTES do merge
-
-(Liste problemas críticos que impedem o merge. Inclua: linha do arquivo, problema e sugestão de correção.
-Se não houver bloqueios, escreva: *Nenhum bloqueio identificado.*)
-
----
-
-### ⚠️ Sugestões — Não bloqueantes, mas recomendadas
-
-(Melhorias de qualidade, legibilidade, performance, boas práticas. Não são obrigatórias para o merge.)
-
----
-
-### ❓ Questionamentos
-
-(Perguntas para o autor do PR sobre decisões de design, trade-offs ou intenções não claras no código.)
-
----
-
-### 🔒 Segurança
-
-(Avalie: SQL injection, XSS, dados sensíveis expostos, JWT mal implementado, hashed_password em responses, variáveis hardcoded, etc.)
-
----
-
-### 📋 Conformidade com as Regras do Projeto
-
-| Regra | Status |
-|---|---|
-| Rotas FastAPI usam `async/await` | ✅ / ❌ / N/A |
-| Type hints em todas as funções Python | ✅ / ❌ / N/A |
-| Campos monetários usam `Decimal`/`NUMERIC`, não `float` | ✅ / ❌ / N/A |
-| Alterações de schema têm migration Alembic | ✅ / ❌ / N/A |
-| `hashed_password` não exposta em responses | ✅ / ❌ / N/A |
-| Sem variáveis sensíveis hardcoded | ✅ / ❌ / N/A |
-| Conventional Commits no título do PR | ✅ / ❌ |
-| Testes para funcionalidade nova | ✅ / ❌ / N/A |
-| `logging` usado (sem `print()` em produção) | ✅ / ❌ / N/A |
-
----
-
-### 🏁 Veredicto Final
-
-- [ ] **APROVADO** — Pode ser mergeado
-- [ ] **APROVADO COM RESSALVAS** — Pode ser mergeado, mas as sugestões devem ser tratadas
-- [ ] **REPROVADO** — Corrija os bloqueios antes do merge
-
----
-*Review gerado automaticamente pelo workflow `ai-review.yml`. Questões sobre o review? Fale com o mantenedor do repositório.*
-"""
-
-          # Chama a API do Gemini
-          url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-          
-          payload = {
-              "contents": [
-                  {
-                      "parts": [{"text": prompt}]
-                  }
-              ],
-              "generationConfig": {
-                  "temperature": 0.3,
-                  "maxOutputTokens": 4096,
-              }
-          }
-
-          response = requests.post(url, json=payload, timeout=120)
-          response.raise_for_status()
-
-          result = response.json()
-          review_text = result["candidates"][0]["content"]["parts"][0]["text"]
-
-          # Salva o review para o próximo step
-          with open("/tmp/ai_review.md", "w", encoding="utf-8") as f:
-              f.write(review_text)
-
-          print("✅ Review gerado com sucesso.")
-          print(f"Tamanho do review: {len(review_text)} chars")
+        run: python .github/scripts/ai_review.py
 
       - name: Postar review como comentário no PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
-        shell: python
-        run: |
-          import json, os, sys, requests
-
-          token = os.environ['GITHUB_TOKEN']
-          pr_number = os.environ['PR_NUMBER']
-          repo = os.environ['REPO']
-
-          with open('/tmp/ai_review.md', 'r', encoding='utf-8') as f:
-              review_body = f.read()
-
-          url = f'https://api.github.com/repos/{repo}/issues/{pr_number}/comments'
-          headers = {
-              'Authorization': f'Bearer {token}',
-              'Accept': 'application/vnd.github+json',
-              'X-GitHub-Api-Version': '2022-11-28'
-          }
-          payload = {'body': review_body}
-
-          response = requests.post(url, json=payload, headers=headers, timeout=30)
-          response.raise_for_status()
-          print(f'✅ Comentário postado no PR #{pr_number}: {response.json()["html_url"]}')
+        run: python .github/scripts/post_review_comment.py
 
       - name: Verificar se review bloqueou o PR
         run: |
