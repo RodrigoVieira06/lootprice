@@ -146,8 +146,9 @@ Makefile, Lefthook, GitHub Actions, Jira, MCP GitHub, MCP Jira, MCP DevTools
 - **NUNCA** sugerir `git push origin master`, `git commit` direto na `master` ou qualquer operação que bypasse o fluxo de PR
 - **TODO** código novo deve ir para uma branch com nome no padrão abaixo
 - **SEMPRE** instruir a abrir um PR após o desenvolvimento de um card
-- **NUNCA** recomendar merge sem o workflow `ai-review` ter postado o comentário de revisão
+- **NUNCA** recomendar merge sem o workflow `ai-review` ter postado o comentário de revisão no PR do GitHub
 - **NUNCA** recomendar merge sem o workflow `ci` ter passado (lint + testes)
+- **SEMPRE** verificar a nota de qualidade (de 0 a 10) postada pelo revisor IA nos comentários do PR. A nota mínima recomendada para aprovação sem ressalvas é 8/10. Notas inferiores devem ser corrigidas e melhoradas.
 
 ### Padrão de nome de branch
 

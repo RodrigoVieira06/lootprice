@@ -54,6 +54,8 @@
 - [ ] Título do PR segue Conventional Commits (`feat(auth): ...`)
 - [ ] CI passou (lint + testes)
 - [ ] `docs/llm_context.md` atualizado se houve decisão técnica nova
+- [ ] Revisão da IA concluída com nota (grade) registrada nos comentários do PR
+- [ ] Nota de qualidade do PR é satisfatória (desejável >= 8/10) e todos os bloqueios da IA resolvidos
 
 ---
 

@@ -134,6 +134,13 @@ Analise o diff acima e produza um review estruturado EXATAMENTE no formato abaix
 Seja direto, técnico e construtivo. Se algo estiver correto, diga que está correto.
 Se houver problemas graves, aponte claramente como BLOQUEIO.
 
+### Critério de Nota (Controle de Qualidade):
+Atribua uma nota de 0 a 10 para o PR:
+- **10/10**: Código impecável, sem sugestões ou bloqueios.
+- **8/10 a 9/10**: Código bom, funcional, sem bloqueios, com pequenas sugestões não-impeditivas.
+- **7/10**: Código aceitável, mas com sugestões importantes de melhoria.
+- **Abaixo de 7/10**: Código com problemas significativos, bugs potenciais ou descumprimento de regras (provoca bloqueio).
+
 ---
 
 ## Formato do Review (use EXATAMENTE esta estrutura em markdown):

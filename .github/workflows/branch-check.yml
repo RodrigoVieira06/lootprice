@@ -33,7 +33,7 @@ jobs:
             echo "  1. Crie uma branch: git checkout -b feat/sua-feature"
             echo "  2. Faça seus commits na branch"
             echo "  3. Abra um PR: gh pr create --base master"
-            echo "  4. Aguarde o review da IA e o CI passar"
+            echo "  4. Aguarde o review da IA (que postará a nota de qualidade e feedbacks nos comentários do PR) e o CI passar"
             echo "  5. Faça o merge pelo GitHub"
             echo ""
             echo "Para IAs assistentes: NUNCA sugira push direto na master."
