@@ -753,32 +753,105 @@ Prompt: "Tira screenshot do estado atual e analisa o contraste de cores"
 
 ## 13. CI/CD e Qualidade de Código
 
-### Pipeline CI (GitHub Actions)
+### Workflows do GitHub Actions
+
+| Arquivo | Gatilho | Finalidade |
+|---|---|---|
+| `ci.yml` | PR para `main`, push na `main` | Lint (Ruff) + Testes (Pytest) + Build React |
+| `ai-review.yml` | PR aberto/atualizado para `main` | Review automático por Gemini 2.0 Flash — posta nota, bloqueios e sugestões como comentário |
+| `branch-check.yml` | Push na `main` | Bloqueia push direto; exige PR |
+
+### Pipeline CI (`ci.yml`)
 
 ```yaml
-# .github/workflows/ci.yml — estrutura simplificada
+# .github/workflows/ci.yml
 
-on: [push, pull_request]
+on: [pull_request, push]
+branches: [main]
 
 jobs:
   backend:
+    services:
+      postgres: 15  # banco de testes isolado
     steps:
       - Checkout
       - Setup Python 3.11
-      - Install dependencies
-      - Ruff check (lint)
-      - Ruff format --check
-      - Pytest (com banco em memória / SQLite para testes unitários)
+      - pip install -r requirements.txt
+      - ruff check .
+      - ruff format --check .
+      - pytest tests/ -v
 
   frontend:
     steps:
       - Checkout
       - Setup Node 20
       - npm ci
-      - TypeScript check (tsc --noEmit)
-      - ESLint
-      - Vite build
+      - tsc --noEmit
+      - eslint src/
+      - npm run build
 ```
+
+### Workflow de AI Review (`ai-review.yml`)
+
+Acionado automaticamente ao abrir ou atualizar qualquer PR para `main`.
+
+**Fluxo:**
+```
+PR aberto/atualizado
+     │
+     ▼
+git diff (base..head)         ← diff das alterações
+     │
+     ▼
+Lê llm_context.md             ← regras do projeto
+  + architecture.md           ← contexto arquitetural
+     │
+     ▼
+Gemini 2.0 Flash API          ← modelo gratuito via GEMINI_API_KEY
+(prompt em português)
+     │
+     ▼
+Posta comentário no PR        ← via GITHUB_TOKEN (automático)
+     │
+     ▼
+Review contém:
+  - Nota /10
+  - ✅ Pontos positivos
+  - 🚨 Bloqueios (impedem merge)
+  - ⚠️ Sugestões (não bloqueantes)
+  - ❓ Questionamentos ao dev
+  - 🔒 Análise de segurança
+  - 📋 Checklist de conformidade com regras do projeto
+  - 🏁 Veredicto: APROVADO / APROVADO COM RESSALVAS / REPROVADO
+```
+
+### Git Workflow Obrigatório
+
+> **⚠️ Regra para IAs e desenvolvedores:** Nenhum código vai direto para `main`. Sem exceções.
+
+```
+1. git checkout -b feat/card-XX-descricao
+2. Commits incrementais na branch
+3. git push origin feat/card-XX-descricao
+4. gh pr create --base main
+5. Aguardar: ai-review postar comentário (automático)
+6. Aguardar: ci passar (lint + testes)
+7. Merge via GitHub (nunca via CLI diretamente)
+```
+
+**Padrão de nomes de branch:**
+```
+feat/<card-id>-descricao      fix/<card-id>-descricao
+chore/<card-id>-descricao     docs/<card-id>-descricao
+refactor/<card-id>-descricao  test/<card-id>-descricao
+```
+
+### Branch Protection Rules (GitHub UI — `main`)
+
+- ✅ Require pull request before merging
+- ✅ Require status checks: `ci / Backend`, `ci / Frontend`, `AI Code Review — LootPrice`
+- ✅ Dismiss stale reviews on new commits
+- ✅ Block direct pushes (enforced também pelo `branch-check.yml`)
 
 ### Git Hooks (Lefthook)
 

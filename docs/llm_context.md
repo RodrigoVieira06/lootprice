@@ -98,6 +98,15 @@ React 18, TypeScript, Vite, TailwindCSS, Axios, Zod, React Hook Form, Zustand
 ### Tooling
 Makefile, Lefthook, GitHub Actions, Jira, MCP GitHub, MCP Jira, MCP DevTools
 
+### CI/CD & Code Review
+| Ferramenta | Finalidade |
+|---|---|
+| `.github/workflows/ci.yml` | Lint (Ruff) + Testes (Pytest) + Build frontend em cada PR |
+| `.github/workflows/ai-review.yml` | Review automático por Gemini 2.0 Flash em cada PR — posta nota, bloqueios, sugestões |
+| `.github/workflows/branch-check.yml` | Bloqueia push direto na `master` com mensagem de erro explicativa |
+| `.github/PULL_REQUEST_TEMPLATE.md` | Template de PR com checklist de qualidade preenchido pelo dev |
+| GitHub Branch Protection | `master` requer PR + CI verde + ai-review antes de qualquer merge |
+
 ---
 
 ## 3. Regras Rígidas de Comportamento (LLM: nunca violar)
@@ -124,6 +133,58 @@ Makefile, Lefthook, GitHub Actions, Jira, MCP GitHub, MCP Jira, MCP DevTools
 - Retornar `hashed_password` em qualquer response de API
 - Criar frontend antes do backend estar funcional
 - Instalar dependências não listadas na stack sem registrar em Decisões Tomadas
+
+---
+
+## 3.1 Git Workflow — Regra OBRIGATÓRIA para toda IA assistente
+
+> **⚠️ INSTRUÇÃO PRIORITÁRIA — aplicável a Claude, Gemini, Copilot, Cursor e qualquer LLM que trabalhe neste projeto.**
+> Qualquer IA que viole estas regras estará criando risco real de regressão e perda de rastreabilidade no projeto.
+
+### Regras de branching (NUNCA violar)
+
+- **NUNCA** sugerir `git push origin master`, `git commit` direto na `master` ou qualquer operação que bypasse o fluxo de PR
+- **TODO** código novo deve ir para uma branch com nome no padrão abaixo
+- **SEMPRE** instruir a abrir um PR após o desenvolvimento de um card
+- **NUNCA** recomendar merge sem o workflow `ai-review` ter postado o comentário de revisão
+- **NUNCA** recomendar merge sem o workflow `ci` ter passado (lint + testes)
+
+### Padrão de nome de branch
+
+```
+feat/<card-id>-descricao-curta      # nova funcionalidade
+fix/<card-id>-descricao-curta       # correção de bug
+chore/<card-id>-descricao-curta     # configuração, tooling, build
+docs/<card-id>-descricao-curta      # apenas documentação
+refactor/<card-id>-descricao-curta  # refatoração sem mudança de comportamento
+test/<card-id>-descricao-curta      # apenas testes
+```
+
+Exemplos reais do projeto:
+```
+feat/card-01-monorepo-setup
+feat/card-03-postgresql-alembic
+fix/card-07-auth-token-expiry
+chore/card-24-ai-code-review
+```
+
+### Fluxo obrigatório para toda IA (ordem exata)
+
+```
+1. Criar branch:   git checkout -b feat/card-XX-descricao
+2. Desenvolver:    commits incrementais na branch
+3. Push:           git push origin feat/card-XX-descricao
+4. Abrir PR:       gh pr create --base master --title "feat(modulo): descricao"
+5. Aguardar:       workflow ai-review postar comentário de revisão (automático)
+6. Aguardar:       workflow ci passar (automático)
+7. Merge:          somente após aprovação — nunca fazer merge manualmente sem CI verde
+```
+
+### Branch protection rules (configuradas no GitHub)
+
+- `master` requer PR obrigatório — push direto é bloqueado pelo `branch-check.yml`
+- Status checks obrigatórios: `ci / Backend (Python)`, `ci / Frontend`, `AI Code Review — LootPrice`
+- Stale reviews são descartados ao novo push
 
 ---
 
@@ -278,6 +339,8 @@ class BaseCrawler(ABC):
 | 2026-06-03 | Frontend é MVP (não Fase 2) | Confirmado em sessão anterior (Claude Opus); já tinha cards CARD-18 a CARD-21; estava incorreto no README e no diagrama de arquitetura | Frontend como Fase 2 descartado |
 | 2026-06-09 | Cloudflare Tunnel mantido na arquitetura futura, bloqueado agora | Sem domínio registrado, Cloudflare Tunnel não pode ser usado. Ferramenta certa para o momento errado. Manter no plano de produção | Remover Cloudflare da arquitetura descartado — ainda é a solução mais segura e gratuita para exposição pública futura |
 | 2026-06-09 | CARD-23 rebaixado para prioridade Low; `get_real_ip()` movida para CARD-17 | Sem Cloudflare ativo, CARD-23 não pode ser testado. A função `get_real_ip()` é útil para qualquer proxy e deve ser implementada no CARD-17 | Executar CARD-23 agora descartado — depende de domínio |
+| 2026-06-10 | Sistema de AI Code Review via GitHub Actions implementado | Necessidade de garantir qualidade e rastreabilidade com desenvolvimento assistido por IA; nenhuma IA deve burlar o fluxo de PR | CodeRabbit SaaS descartado (repo privado = pago); Claude API descartada (sem key separada) — Gemini free tier suficiente |
+| 2026-06-10 | CARD-24 criado: feat(ci): sistema de AI code review | Infra transversal criada via `ai-review.yml`, `ci.yml`, `branch-check.yml`, `PULL_REQUEST_TEMPLATE.md` e seção 3.1 em `llm_context.md` | Repo separado para o bot descartado — workflow dentro do projeto é o padrão da indústria |
 
 ---
 
