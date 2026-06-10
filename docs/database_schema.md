@@ -1,8 +1,9 @@
 # LootPrice — Database Schema
 
-> **Versão:** 0.1.0-MVP
+> **Versão:** 0.1.1-MVP
 > **Banco:** PostgreSQL 15+
 > **ORM:** SQLModel + Alembic (migrations obrigatórias)
+> **Última atualização:** 2026-06-03
 > **Audiência:** Desenvolvedor, LLMs de apoio
 
 ---
@@ -141,6 +142,24 @@ ALTER TABLE users ADD CONSTRAINT chk_local_password
 
 ---
 
+### `revoked_tokens`
+
+Blacklist de refresh tokens revogados. Usada para implementar logout real e revogação de tokens vazados sem depender de Redis no MVP.
+
+| Coluna | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| `id` | `UUID` | PK, DEFAULT gen_random_uuid() | |
+| `token_jti` | `VARCHAR(255)` | NOT NULL, UNIQUE | Campo `jti` do JWT (UUID único gerado em `create_refresh_token()`) |
+| `revoked_at` | `TIMESTAMP` | NOT NULL, DEFAULT NOW() | Momento da revogação |
+| `expires_at` | `TIMESTAMP` | NOT NULL | Cópia do `exp` do token — para limpeza periódica via cron |
+
+**Índices:**
+```sql
+CREATE INDEX idx_revoked_tokens_jti ON revoked_tokens (token_jti);
+```
+
+**Nota de negócio:** O endpoint `POST /auth/logout` insere o `jti` do refresh token nesta tabela. A função `decode_token()` em `security.py` verifica a presença do `jti` aqui antes de aceitar o token como válido. Registros expirados (`expires_at < NOW()`) devem ser limpos periodicamente — débito técnico para a Fase 2.
+
 ## Estrutura SQLModel (Referência para LLMs)
 
 ```python
@@ -169,10 +188,11 @@ class Game(SQLModel, table=True):
 A ordem importa por causa das foreign keys:
 
 ```
-1. stores       (sem dependências)
-2. games        (sem dependências)
-3. users        (sem dependências)
-4. prices       (depende de games e stores)
+1. stores           (sem dependências)
+2. games            (sem dependências)
+3. users            (sem dependências)
+4. prices           (depende de games e stores)
+5. revoked_tokens   (sem dependências — executa após users por clareza de contexto)
 ```
 
 **Comando de referência:**
@@ -204,3 +224,5 @@ CREATE TABLE wishlists (
     PRIMARY KEY (user_id, game_id)
 );
 ```
+
+> **Nota de ambiente:** O banco roda em Docker na máquina Ubuntu local (i7 10ª + 8GB RAM) acessada via SSH. Não confundir com WSL2 — é uma instância Ubuntu nativa, sem as peculiaridades de networking do WSL2. O `DATABASE_URL` em desenvolvimento aponta para `localhost:5432` quando acessado dentro da máquina Ubuntu.

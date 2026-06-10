@@ -1,8 +1,8 @@
 # LootPrice — Architecture Document
 
-> **Versão:** 0.1.0-MVP
-> **Status:** Planejamento Ativo
-> **Última atualização:** 2026-05
+> **Versão:** 0.2.0-MVP
+> **Status:** Planejamento Consolidado — Pronto para Execução
+> **Última atualização:** 2026-06-03
 > **Audiência:** Desenvolvedor, LLMs de apoio (GitHub Copilot, Claude, Cursor, etc.)
 
 ---
@@ -157,7 +157,9 @@ Mesmo no MVP, adicione `slowapi` (rate limiting para FastAPI) antes do primeiro 
 | Testes | Pytest + pytest-asyncio + httpx | Testes unitários e de integração da API |
 | Autenticação | python-jose + passlib | JWT com bcrypt; amplamente utilizado no ecossistema FastAPI |
 | Rate Limiting | slowapi | Middleware de throttling nativo para FastAPI |
-| Ambiente | WSL2 Ubuntu (dev) | Conforme preferência do desenvolvedor |
+| Ambiente | Ubuntu nativo (i7 10ª, 8GB RAM) via SSH | Máquina própria — hardware superior à maioria das VPS nessa faixa de preço |
+
+> **⚠️ Nota `python-jose`:** Biblioteca ativa no MVP. Monitorar atividade de manutenção — se inativa por 6+ meses, migrar para `PyJWT` + `authlib`. Registrado como DT-02 em `llm_context.md`.
 
 ### Banco de Dados & Infraestrutura
 
@@ -166,6 +168,11 @@ Mesmo no MVP, adicione `slowapi` (rate limiting para FastAPI) antes do primeiro 
 | Banco de Dados | PostgreSQL 15+ | Relacional, confiável, suporte nativo a JSONB para dados extras |
 | Container | Docker + Docker Compose | Banco isolado, reproduzível entre máquinas |
 | Migrations | Alembic | Controle de versão do schema, obrigatório desde o dia 1 |
+| Proxy Reverso | Nginx | Gerencia domínios/portas; repassa `CF-Connecting-IP` para o FastAPI |
+| Acesso SSH remoto | Tailscale | VPN mesh gratuita; SSH seguro sem IP fixo ou abertura de portas |
+| Exposição pública | Cloudflare Tunnel | HTTPS automático, sem abrir portas no roteador, proteção DDoS gratuita |
+
+> **Gotcha crítico — Cloudflare + slowapi:** O `slowapi` precisa usar `get_real_ip()` como `key_func` para ler `X-Forwarded-For` (reescrito pelo Nginx a partir do header `CF-Connecting-IP`). Sem isso, o rate limiting opera por IP do Cloudflare e não por cliente real. Documentado no CARD-23 (LP-31).
 
 ### Frontend
 
@@ -185,8 +192,7 @@ Mesmo no MVP, adicione `slowapi` (rate limiting para FastAPI) antes do primeiro 
 | Makefile | Atalhos: `make dev`, `make test`, `make crawl`, `make migrate` |
 | Lefthook | Git hooks: lint + commit message no pre-commit |
 | GitHub Actions | CI: lint, testes, build a cada push/PR |
-| GitHub Projects | Gestão de tarefas e backlog |
-| Jira (opcional) | Alternativa ao GitHub Projects com integração MCP |
+| Jira | Gestão de backlog e sprints (23 cards, 8 épicos) — integrado via MCP |
 
 ---
 
@@ -204,6 +210,8 @@ lootprice/                          # Raiz do Monorepo
 ├── docs/
 │   ├── architecture.md             # Este documento
 │   ├── database_schema.md          # Modelagem detalhada do banco
+│   ├── llm_context.md              # Contexto vivo para LLMs (atualizar ao fim de cada sessão)
+│   ├── project_cards.md            # 23 cards do Jira com critérios de aceitação
 │   ├── api_contracts.md            # Exemplos de request/response de cada rota
 │   └── crawler_guide.md            # Como adicionar um novo crawler
 │
@@ -211,28 +219,30 @@ lootprice/                          # Raiz do Monorepo
 │   ├── app/
 │   │   ├── api/
 │   │   │   ├── v1/
-│   │   │   │   ├── games.py        # GET /games, GET /games/{id}
-│   │   │   │   ├── prices.py       # GET /prices?game_id=
+│   │   │   │   ├── games.py        # GET /games, GET /games/{slug}
 │   │   │   │   ├── search.py       # GET /search?q=
-│   │   │   │   └── auth.py         # POST /auth/login, /auth/register, /auth/refresh
+│   │   │   │   ├── auth.py         # POST /auth/login, /register, /refresh, /logout
+│   │   │   │   └── admin.py        # POST /admin/crawl, PATCH /admin/games, /stores
 │   │   │   └── router.py           # Agregador de rotas
 │   │   │
 │   │   ├── core/
 │   │   │   ├── config.py           # Settings via pydantic-settings (.env)
 │   │   │   ├── database.py         # Engine e sessão do SQLModel
-│   │   │   ├── security.py         # JWT encode/decode, hash de senha
-│   │   │   └── dependencies.py     # get_current_user, get_db (FastAPI Depends)
+│   │   │   ├── security.py         # JWT encode/decode, hash de senha, decode com blacklist
+│   │   │   ├── rate_limit.py       # slowapi limiter + get_real_ip() (CF-Connecting-IP)
+│   │   │   └── dependencies.py     # get_current_user, require_admin (FastAPI Depends)
 │   │   │
 │   │   ├── models/                 # Tabelas do banco (SQLModel Table=True)
 │   │   │   ├── game.py
 │   │   │   ├── price.py
 │   │   │   ├── store.py
-│   │   │   └── user.py
+│   │   │   ├── user.py
+│   │   │   └── revoked_token.py    # Blacklist de refresh tokens (campo jti)
 │   │   │
 │   │   ├── schemas/                # DTOs Pydantic (sem Table=True)
 │   │   │   ├── game.py             # GameRead, GameWithPrices
 │   │   │   ├── price.py            # PriceRead
-│   │   │   └── auth.py             # TokenResponse, LoginRequest
+│   │   │   └── auth.py             # TokenResponse, LoginRequest, RegisterRequest
 │   │   │
 │   │   └── crawlers/
 │   │       ├── base.py             # Classe abstrata BaseCrawler
@@ -247,6 +257,7 @@ lootprice/                          # Raiz do Monorepo
 │   ├── tests/
 │   │   ├── test_api/
 │   │   ├── test_crawlers/
+│   │   ├── test_core/
 │   │   └── conftest.py
 │   │
 │   ├── .env.example                # Template de variáveis de ambiente
@@ -266,7 +277,12 @@ lootprice/                          # Raiz do Monorepo
 │   ├── vite.config.ts
 │   └── package.json
 │
-├── docker-compose.yml              # PostgreSQL + (futuro) Redis
+├── nginx/
+│   ├── nginx.conf                  # Configuração principal
+│   └── sites/
+│       └── lootprice.conf          # Virtual host com proxy_pass + CF-Connecting-IP
+│
+├── docker-compose.yml              # PostgreSQL + Nginx
 ├── Makefile                        # Atalhos de desenvolvimento
 ├── lefthook.yml                    # Git hooks
 ├── .gitignore
@@ -319,8 +335,9 @@ users
   email (UNIQUE)
   hashed_password (nullable — login social não tem senha)
   role: enum('user', 'admin')
-  provider: enum('local', 'google', 'discord')
-  created_at
+  auth_provider: enum('local', 'google', 'discord')
+  provider_user_id (nullable)
+  created_at, updated_at
 
 stores
   id (PK)
@@ -336,8 +353,7 @@ games
   canonical_name    -- Nome normalizado (ex: "cyberpunk 2077")
   slug              -- "cyberpunk-2077"
   cover_url (nullable)
-  created_at
-  updated_at
+  created_at, updated_at
 
 prices
   id (PK)
@@ -351,6 +367,12 @@ prices
   scraped_at        -- Timestamp da última coleta
 
 UNIQUE(game_id, store_id)  -- Um registro de preço por jogo por loja
+
+revoked_tokens                 -- Blacklist de refresh tokens (MVP — CARD-22)
+  id (PK)
+  token_jti (UNIQUE)   -- Campo `jti` do JWT — UUID gerado em create_refresh_token()
+  revoked_at
+  expires_at           -- Cópia do `exp` do token para limpeza periódica
 ```
 
 ### Decisões de Design
@@ -359,6 +381,7 @@ UNIQUE(game_id, store_id)  -- Um registro de preço por jogo por loja
 - `prices` guarda apenas o **preço atual** no MVP. Histórico será uma tabela `price_history` na Fase 3
 - `price_brl` em NUMERIC, nunca FLOAT — dinheiro não tolera imprecisão de ponto flutuante
 - `scraped_at` permite exibir "Atualizado há X minutos" no frontend sem expor problemas de crawler
+- `revoked_tokens` usa campo `jti` (JWT ID) para blacklist eficiente sem depender de Redis no MVP
 
 ---
 
@@ -436,6 +459,7 @@ NuuvemCrawler        SteamCrawler
 | POST | `/auth/register` | Não | Cadastro local |
 | POST | `/auth/login` | Não | Login local — retorna JWT |
 | POST | `/auth/refresh` | JWT | Renova access token |
+| POST | `/auth/logout` | JWT | Revoga refresh token (insere jti na blacklist) |
 | GET | `/auth/me` | JWT | Dados do usuário autenticado |
 | GET | `/auth/google` | Não | Inicia OAuth Google |
 | GET | `/auth/discord` | Não | Inicia OAuth Discord |
@@ -490,10 +514,28 @@ Verifica hash (passlib/bcrypt)
     │
     ▼
 Gera access_token (JWT, expira em 30min)
-    +  refresh_token (JWT opaco, expira em 7 dias, salvo em DB)
+  + refresh_token (JWT com campo `jti`, expira em 7 dias, jti salvo em revoked_tokens potencialmente)
     │
     ▼
 Retorna {access_token, refresh_token, token_type: "bearer"}
+```
+
+### Fluxo de Logout / Revogação de Token
+
+```
+POST /auth/logout  {Authorization: Bearer <refresh_token>}
+    │
+    ▼
+Decodifica refresh_token → extrai campo `jti`
+    │
+    ▼
+INSERT INTO revoked_tokens (token_jti, expires_at)
+    │
+    ▼
+Retorna 200 {message: "Logged out successfully"}
+
+# Qualquer uso posterior do mesmo refresh_token:
+decode_token() → SELECT token_jti FROM revoked_tokens → encontrado → 401 Unauthorized
 ```
 
 ### Fluxo OAuth (Google / Discord)
@@ -524,7 +566,7 @@ Retorna JWT (mesmo formato do login local)
 ### Variáveis de Ambiente Obrigatórias
 
 ```env
-# .env.example
+# backend/.env.example
 DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/lootprice
 SECRET_KEY=<gerado com: openssl rand -hex 32>
 ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -534,6 +576,9 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 DISCORD_CLIENT_ID=
 DISCORD_CLIENT_SECRET=
+
+# Frontend
+VITE_API_URL=http://localhost:8000/api/v1
 ```
 
 ---
@@ -769,27 +814,36 @@ refactor(normalizer): extrai lógica de slug para utilitário separado
 
 ## 14. Roadmap Faseado
 
-### Fase 1 — MVP (Escopo Atual)
+### Fase 1 — MVP (Backend + Infra)
 
-- [ ] Setup do repositório, Docker, Makefile, Lefthook
-- [ ] Migrations iniciais com Alembic (models: games, prices, stores, users)
-- [ ] Crawler: Steam (API)
-- [ ] Crawler: Nuuvem (scraper)
-- [ ] Normalização de nomes e geração de slugs
-- [ ] API REST: busca, listagem, detalhe
-- [ ] Autenticação: JWT local + Google + Discord
-- [ ] RBAC: roles user/admin
-- [ ] Frontend: busca + comparação de preços + auth
-- [ ] CI/CD: GitHub Actions (lint + testes)
-- [ ] MCP setup: GitHub + DevTools
+- [ ] Setup do repositório, Docker, Makefile, Lefthook (CARD-01 / LP-12) ← **em andamento**
+- [ ] Pipeline CI com GitHub Actions (CARD-02 / LP-14)
+- [ ] Models: stores, games, prices, users, revoked_tokens + migrations Alembic (CARD-03, 04, 05)
+- [ ] Crawler: Steam API (CARD-13 / LP-18)
+- [ ] Crawler: Nuuvem scraper (CARD-14 / LP-20)
+- [ ] Normalização de nomes e geração de slugs (CARD-12 / LP-19)
+- [ ] API REST: busca, listagem, detalhe (CARD-15 / LP-23)
+- [ ] API REST: endpoints de administração (CARD-16 / LP-28)
+- [ ] Autenticação: JWT local + Google + Discord (CARD-06 a 09)
+- [ ] Revogação de refresh tokens via `revoked_tokens` (CARD-22 / LP-30)
+- [ ] RBAC: roles user/admin (CARD-10 / LP-16)
+- [ ] Rate limiting com slowapi (CARD-17 / LP-27)
+- [ ] Nginx com suporte a CF-Connecting-IP (CARD-23 / LP-31)
+
+### Fase 1.5 — Frontend (MVP — parte do escopo original)
+
+- [ ] Setup React SPA: Vite + TypeScript + TailwindCSS + Zustand (CARD-18 / LP-29)
+- [ ] Página de busca e listagem de jogos (CARD-19 / LP-26)
+- [ ] Páginas de login e registro (CARD-20 / LP-24)
+- [ ] Página de detalhe do jogo com comparação de preços (CARD-21 / LP-25)
 
 ### Fase 2 — Expansão de Lojas
 
 - [ ] Crawler: GOG, Humble Bundle, Green Man Gaming
 - [ ] Admin panel: gerenciar lojas, forçar re-scraping, editar canonical_names
-- [ ] Agendamento automático de crawlers (Celery + Redis ou APScheduler)
+- [ ] Agendamento automático de crawlers (APScheduler ou Celery + Redis)
 - [ ] Wishlist e favoritos por usuário
-- [ ] MCP: Jira para gestão de backlog
+- [ ] Limpeza periódica de `revoked_tokens` expirados (débito DT-01)
 
 ### Fase 3 — Features Avançadas
 
@@ -811,7 +865,9 @@ refactor(normalizer): extrai lógica de slug para utilitário separado
 | Vazamento de credenciais no repositório | Baixa | Crítico | `.env` no gitignore, `.env.example` sem valores reais, GitHub Secret Scanning |
 | Bloqueio de IP por scraping agressivo | Média | Alto | Rate limiting nos crawlers, User-Agent rotation, respeitar robots.txt |
 | Schema do banco quebra sem migration | Média | Alto | Alembic obrigatório desde o dia 1 — nunca alterar models sem migration |
-| Refresh tokens sem revogação | Baixa | Alto | Implementar tabela `revoked_tokens` ou usar Redis para blacklist |
+| Refresh tokens sem revogação | ~~Baixa~~ **Mitigado** | Alto | Tabela `revoked_tokens` implementada no MVP (CARD-22 / LP-30) |
+| rate limiting ineficaz atrás de Cloudflare | Média | Alto | `get_real_ip()` lê `CF-Connecting-IP` via Nginx (CARD-23 / LP-31) |
+| `python-jose` sem manutenção futura | Baixa | Médio | Monitorar; migrar para `PyJWT` + `authlib` se inativo 6+ meses (DT-02) |
 
 ---
 

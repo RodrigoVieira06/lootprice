@@ -5,7 +5,7 @@
 > Cada card contém: tipo, épico pai, descrição técnica precisa, critérios de aceitação mensuráveis, arquivos a criar/editar, dependências entre cards e o que explicitamente **não** fazer.
 > Ao criar um card no Jira via MCP, use o campo `summary` para o título, `description` para o corpo completo em Markdown, `labels` para as labels e `priority` para a prioridade.
 > **Não resumir, não omitir critérios de aceitação, não alterar os títulos.**
-> **Total de cards: 21 (CARD-01 a CARD-21)**
+> **Total de cards: 23 (CARD-01 a CARD-23)**
 
 ---
 
@@ -335,6 +335,8 @@ backend/
 # Configurações (SECRET_KEY, algoritmo, expiração) lidas de Settings
 # Algoritmo: HS256
 ```
+
+> **⚠️ Nota de dependência:** `python-jose` é a biblioteca atualmente listada na stack. O ecossistema FastAPI migrou parcialmente para `PyJWT` + `authlib` como alternativas mais ativamente mantidas. Para o MVP, manter `python-jose`. Monitorar e registrar decisão de migração se a biblioteca ficar sem manutenção por mais de 6 meses.
 
 **Critérios de Aceitação:**
 
@@ -922,9 +924,11 @@ CARD-01 (Setup)
                           └── CARD-09 (Discord OAuth)
                           └── CARD-10 (Dependencies + /me)
                                 └── CARD-16 (Admin API)
+                                └── CARD-22 (Refresh Token Revogation)
 
 CARD-16 (Admin API — todas as deps resolvidas)
   └── CARD-17 (Rate Limiting)
+        └── CARD-23 (Nginx + Cloudflare IP Passthrough)
 
 CARD-15 (Games API) + CARD-10 (Dependencies + /me)
   └── CARD-18 (Frontend Setup)
@@ -932,6 +936,94 @@ CARD-15 (Games API) + CARD-10 (Dependencies + /me)
         └── CARD-20 (Auth Pages)
         └── CARD-21 (Game Detail Page)
 ```
+
+---
+
+## EPIC-3.5 — Segurança de Autenticação
+
+---
+
+### CARD-22
+
+```
+Tipo: Task
+Épico: EPIC-3
+Prioridade: High
+Labels: backend, auth, security
+Summary: feat(auth): implementar revogação de refresh tokens
+Depende de: CARD-10
+```
+
+**Descrição:**
+
+Refresh tokens com validade de 7 dias sem mecanismo de revogação são um risco de segurança real: tokens vazados permanecem válidos até expirar naturalmente. Este card implementa uma blacklist de tokens via tabela `revoked_tokens` no PostgreSQL. Redis não é necessário no MVP — a abordagem in-database é suficiente para o volume esperado e elimina uma dependência de infraestrutura.
+
+**Arquivos a criar/editar:**
+
+```
+backend/
+├── app/
+│   ├── models/
+│   │   └── revoked_token.py     ← model RevokedToken
+│   ├── core/
+│   │   └── security.py          ← atualizar decode_token() para checar blacklist
+│   └── api/
+│       └── v1/
+│           └── auth.py          ← adicionar POST /auth/logout
+├── migrations/
+│   └── versions/
+│       └── XXXX_create_revoked_tokens.py
+└── tests/
+    └── test_api/
+        └── test_auth_revocation.py
+```
+
+**Schema da tabela `revoked_tokens`:**
+
+```sql
+CREATE TABLE revoked_tokens (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token_jti   VARCHAR(255) NOT NULL UNIQUE,  -- JWT ID (campo `jti` do payload)
+    revoked_at  TIMESTAMP NOT NULL DEFAULT NOW(),
+    expires_at  TIMESTAMP NOT NULL             -- para limpeza periódica via cron
+);
+CREATE INDEX idx_revoked_tokens_jti ON revoked_tokens (token_jti);
+```
+
+**Contratos de API:**
+
+```
+POST /api/v1/auth/logout
+  Header: Authorization: Bearer <refresh_token>
+  Response 200: { message: "Logged out successfully" }
+  Response 401: token inválido ou já revogado
+
+# Comportamento:
+# 1. Decodifica o refresh_token
+# 2. Extrai o campo `jti` (JWT ID único por token)
+# 3. Insere o jti na tabela revoked_tokens com expires_at = token.exp
+# 4. Qualquer uso posterior do mesmo token retorna 401
+```
+
+**Critérios de Aceitação:**
+
+- [ ] `create_refresh_token()` gera tokens com campo `jti` (UUID aleatório)
+- [ ] `decode_token()` verifica o `jti` contra `revoked_tokens` após validar assinatura
+- [ ] `POST /auth/logout` insere o jti na blacklist e retorna 200
+- [ ] Usar o refresh token após logout retorna 401
+- [ ] Token de outro usuário não pode ser revogado via logout (validação de ownership)
+- [ ] Testes: logout bem-sucedido, uso de token revogado, token inválido
+
+**Débito técnico a registrar no `llm_context.md`:**
+```
+- Implementar job periódico para limpar revoked_tokens expirados:
+  DELETE FROM revoked_tokens WHERE expires_at < NOW()
+  Pode ser um cron via GitHub Actions ou APScheduler na Fase 2
+```
+
+**Não fazer:**
+- Não usar Redis para a blacklist no MVP (complexidade desnecessária)
+- Não revogar access tokens (30min de validade é aceitável; só revogar refresh)
 
 ---
 
@@ -1201,12 +1293,95 @@ frontend/
 
 ---
 
+## EPIC-8 — Infraestrutura de Deploy
+
+---
+
+### CARD-23
+
+```
+Tipo: Task
+Épico: EPIC-8
+Prioridade: Medium
+Labels: infra, deploy, security
+Summary: chore(infra): configurar Nginx com suporte a Cloudflare IP passthrough
+Depende de: CARD-17
+```
+
+**Descrição:**
+
+Quando a aplicação está atrás do Cloudflare Tunnel + Nginx, o IP real do cliente não chega diretamente ao FastAPI — chega o IP do proxy Cloudflare. Sem tratamento correto, o `slowapi` aplicará rate limiting por IP do Cloudflare (não do cliente real), tornando o throttling ineficaz ou bloqueando todos os usuários ao mesmo tempo.
+
+Este card configura o Nginx para extrair o IP real do header `CF-Connecting-IP` (enviado pelo Cloudflare) e o FastAPI/slowapi para usar esse IP como chave de rate limiting.
+
+**Arquivos a criar/editar:**
+
+```
+lootprice/
+├── nginx/
+│   ├── nginx.conf              ← configuração principal do Nginx
+│   └── sites/
+│       └── lootprice.conf      ← virtual host com proxy_pass para FastAPI
+└── docker-compose.yml          ← adicionar service nginx (opcional para dev, obrigatório para prod)
+```
+
+**Configuração Nginx obrigatória:**
+
+```nginx
+# nginx/sites/lootprice.conf
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass         http://backend:8000;
+        proxy_set_header   Host $host;
+
+        # Repassa o IP real do Cloudflare para o FastAPI
+        proxy_set_header   X-Real-IP $http_cf_connecting_ip;
+        proxy_set_header   X-Forwarded-For $http_cf_connecting_ip;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+**Configuração do slowapi (atualizar CARD-17):**
+
+```python
+# rate_limit.py — key_func deve ler X-Forwarded-For quando disponível
+from slowapi.util import get_remote_address
+
+def get_real_ip(request: Request) -> str:
+    # CF-Connecting-IP já foi reescrito pelo Nginx para X-Forwarded-For
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    return get_remote_address(request)
+```
+
+**Critérios de Aceitação:**
+
+- [ ] Nginx configurado e documentado em `nginx/`
+- [ ] `CF-Connecting-IP` repassado como `X-Real-IP` e `X-Forwarded-For` para o backend
+- [ ] `slowapi` usa `get_real_ip()` como `key_func` (não `get_remote_address` padrão)
+- [ ] Teste manual: logs do FastAPI exibem IP do cliente real, não IP do Cloudflare
+- [ ] `docker-compose.yml` inclui service `nginx` apontando para o backend
+- [ ] Documentado no `README.md` na seção de deploy
+
+**Não fazer:**
+- Não confiar cegamente em qualquer header `X-Forwarded-For` sem validar que vem do Cloudflare (para prod, usar lista de IPs do Cloudflare)
+- Não adicionar configuração de SSL no Nginx — o Cloudflare Tunnel já gerencia HTTPS
+
+> **📝 Nota para o desenvolvedor:** Este card é relevante mesmo usando a máquina Ubuntu local com Cloudflare Tunnel. Sem ele, o rate limiting funciona localmente mas falha em produção.
+
+---
+
 ## Instrução Final para LLM (Jira MCP)
 
 Ao processar este arquivo para criar cards no Jira:
 
-1. Criar um Épico para cada seção `## EPIC-N` (total: 7 épicos)
-2. Criar uma Issue do tipo `Task` para cada `### CARD-N` (total: 21 cards)
+1. Criar um Épico para cada seção `## EPIC-N` (total: 8 épicos)
+2. Criar uma Issue do tipo `Task` para cada `### CARD-N` (total: 23 cards)
 3. Preencher `summary` com o valor do campo `Summary:` no card
 4. Preencher `description` com todo o conteúdo do card em Markdown
 5. Definir `priority` conforme o campo `Prioridade:`
@@ -1214,3 +1389,10 @@ Ao processar este arquivo para criar cards no Jira:
 7. Usar o campo `Depende de:` para criar `issue links` do tipo `blocks/is blocked by`
 8. Linkar cada Task ao seu Épico pai conforme o campo `Épico:`
 9. **Não resumir a descrição** — o conteúdo completo dos critérios de aceitação deve estar no card
+
+### Cards adicionados na revisão de 2026-06-03
+
+| Card | Motivo da adição |
+|---|---|
+| CARD-22 | Refresh tokens sem revogação são risco de segurança documentado nos riscos do architecture.md mas sem card correspondente |
+| CARD-23 | Gotcha crítico: Cloudflare Tunnel + Nginx sem `CF-Connecting-IP` torna rate limiting ineficaz por IP real |

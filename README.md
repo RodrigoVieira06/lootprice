@@ -27,7 +27,7 @@ O LootPrice realiza scraping e consome APIs de múltiplas lojas, normaliza os da
            [ FastAPI REST ]
                   │
                   ▼
-          [ React SPA (Fase 2) ]
+          [ React SPA (MVP) ]
 ```
 
 Documentação completa: [`docs/architecture.md`](docs/architecture.md)
@@ -36,10 +36,13 @@ Documentação completa: [`docs/architecture.md`](docs/architecture.md)
 
 ## Pré-requisitos
 
-- WSL2 (Ubuntu) — se estiver no Windows
+- Ubuntu (máquina nativa ou WSL2 no Windows)
 - Python 3.11+
 - Docker & Docker Compose
+- Node.js 20+
 - Lefthook instalado globalmente (`npm install -g lefthook`)
+
+> **Acesso remoto:** O ambiente de desenvolvimento recomendado é uma máquina Ubuntu acessada via SSH. Use **[Tailscale](https://tailscale.com)** para acesso SSH seguro de qualquer lugar e **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** para expor a aplicação durante testes sem precisar de VPS.
 
 ---
 
@@ -111,7 +114,8 @@ lootprice/
 │   ├── tests/
 │   ├── main.py
 │   └── requirements.txt
-├── frontend/                 # React + TypeScript (Fase 2)
+├── frontend/                 # React + TypeScript (MVP)
+├── nginx/                    # Configuração do Nginx (proxy reverso)
 ├── docker-compose.yml
 ├── Makefile
 └── lefthook.yml
@@ -121,9 +125,11 @@ lootprice/
 
 ## Stack
 
-**Backend:** Python 3.11, FastAPI, SQLModel, Alembic, PostgreSQL 15, HTTPX, BeautifulSoup4, Pydantic v2, python-jose, passlib, Ruff, Pytest
+**Backend:** Python 3.11, FastAPI, SQLModel, Alembic, PostgreSQL 15, HTTPX, BeautifulSoup4, Pydantic v2, python-jose, passlib, slowapi, Ruff, Pytest
 
-**Frontend (Fase 2):** React 18, TypeScript, Vite, TailwindCSS, Axios, Zod, React Hook Form
+**Frontend (MVP):** React 18, TypeScript, Vite, TailwindCSS, Axios, Zod, React Hook Form, Zustand
+
+**Infra:** Docker + Docker Compose, Nginx, Tailscale (acesso SSH), Cloudflare Tunnel (exposição pública)
 
 ---
 
@@ -160,8 +166,9 @@ Ao iniciar uma sessão com qualquer LLM, forneça o arquivo [`docs/llm_context.m
 
 | Fase | Status | Escopo |
 |---|---|---|
-| Fase 1 — MVP | 🔄 Em andamento | Backend, crawlers Steam + Nuuvem, auth, API REST |
-| Fase 2 — Frontend | ⏳ Planejado | React SPA, wishlist, admin panel |
+| Fase 1 — MVP | 🔄 Em andamento | Backend, crawlers Steam + Nuuvem, auth (local + OAuth), revogação de tokens, API REST, rate limiting, Nginx |
+| Fase 1.5 — Frontend | ⏳ Planejado | React SPA: busca, detalhe de jogo, login/registro |
+| Fase 2 — Expansão | ⏳ Planejado | Admin panel, mais lojas (GOG, GMG), wishlist, alertas |
 | Fase 3 — Escala | ⏳ Planejado | Histórico de preços, alertas, G2A/Eneba, consoles |
 
 ---

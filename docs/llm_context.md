@@ -9,11 +9,11 @@
 
 | Campo | Valor |
 |---|---|
-| **Versão** | 0.1.1 |
-| **Última atualização** | 2026-06-01 |
-| **Atualizado por** | Gemini CLI |
-| **Fase atual** | Planejamento — nenhum código implementado ainda |
-| **Próximo card** | CARD-01: Setup inicial do repositório |
+| **Versão** | 0.1.3 |
+| **Última atualização** | 2026-06-03 |
+| **Atualizado por** | Claude Sonnet 4.6 (Thinking) via Antigravity IDE |
+| **Fase atual** | Desenvolvimento — CARD-01 em andamento (não iniciado fisicamente) |
+| **Próximo card** | CARD-01: Setup inicial do repositório (Aguardando implementação física) |
 
 ---
 
@@ -62,7 +62,8 @@ Nunca atualize parcialmente — sempre entregue o arquivo inteiro.
 **Tipo:** Agregador e comparador de preços de chaves de jogos digitais
 **Objetivo:** Scraping de múltiplas lojas → normalização → interface mostrando onde o jogo está mais barato
 **Repositório:** Monorepo
-**Ambiente de dev:** WSL2 Ubuntu (Windows)
+**Ambiente de dev:** Ubuntu nativo (i7 10ª geração, 8GB RAM) — acessado via SSH do PC principal
+**Acesso remoto:** Tailscale (SSH seguro) + Cloudflare Tunnel (exposição da app para testes)
 **Perfil do desenvolvedor:** Frontend sênior (React, Node.js), backend básico, Python intermediário
 
 ---
@@ -132,9 +133,10 @@ Makefile, Lefthook, GitHub Actions, Jira, MCP GitHub, MCP Jira, MCP DevTools
 ```
 docs/
 ├── architecture.md       ✅ Criado — visão arquitetural completa
-├── database_schema.md    ✅ Criado — schema com todas as tabelas e constraints
+├── database_schema.md    ✅ Criado — schema com todas as tabelas (incl. revoked_tokens)
 ├── llm_context.md        ✅ Este arquivo
-└── project_cards.md      ✅ Criado — 21 cards do Jira com critérios de aceitação (7 épicos)
+└── project_cards.md      ✅ Criado — 23 cards do Jira com critérios de aceitação (8 épicos)
+                          ✅ CARD-22 criado no Jira como LP-30 | CARD-23 criado como LP-31
 ```
 
 ### [ATUALIZÁVEL] Arquivos do Backend
@@ -154,19 +156,20 @@ backend/
 
 ### Cards em Progresso
 ```
-(nenhum)
+CARD-01: chore(infra): setup inicial do repositório monorepo [LP-12]
+  → Iniciado em 2026-06-02. Próximo passo: criar estrutura física de pastas e arquivos base.
 ```
 
 ### Cards Concluídos
 ```
-(nenhum — projeto em fase de planejamento)
+(nenhum — desenvolvimento iniciado)
 ```
 
 ### Próximo a Executar
 ```
-CARD-01: chore(infra): setup inicial do repositório monorepo
-  → Criar estrutura de pastas, docker-compose.yml, Makefile, lefthook.yml, .env.example, main.py vazio
-  → Referência completa: docs/project_cards.md#CARD-01
+CARD-02: chore(ci): configurar pipeline CI com GitHub Actions [LP-14] (Depende de CARD-01)
+CARD-03: feat(database): configurar conexão com PostgreSQL e setup do Alembic [LP-9] (Depende de CARD-01)
+CARD-05: feat(database): implementar model de users com suporte a OAuth e RBAC [LP-10] (Depende de CARD-03)
 ```
 
 ### Cards Bloqueados
@@ -267,6 +270,12 @@ class BaseCrawler(ABC):
 | 2026-05 | `NUMERIC(10,2)` para preços | Precisão exata para dinheiro | `Float` descartado |
 | 2026-05 | `slowapi` para rate limiting desde o MVP | API pública sem throttle é risco imediato | Sem rate limiting descartado |
 | 2026-06-01 | Migração do GitHub Projects para Jira | Gestão de backlog centralizada no espaço "Loot Price" solicitado, cards exportados e configurados usando Jira MCP Server. | GitHub Projects |
+| 2026-06-03 | `revoked_tokens` no schema do MVP | Refresh tokens sem revogação são risco de segurança real; estava nos riscos do architecture.md sem card correspondente | Redis para blacklist descartado (desnecessário no MVP) |
+| 2026-06-03 | Ambiente de dev é Ubuntu físico (não WSL2) | Máquina i7 10ª + 8GB RAM já disponível; hardware superior à maioria das VPS na faixa de preço | VPS paga descartada até necessidade de uptime garantido |
+| 2026-06-03 | Tailscale + Cloudflare Tunnel como infra de acesso | Tailscale para SSH seguro sem IP fixo; Cloudflare Tunnel para expor a app sem abrir portas | DDNS + port forwarding descartado (menos seguro) |
+| 2026-06-03 | Manter `python-jose` no MVP, monitorar migração | `PyJWT` + `authlib` são alternativas mais ativas; mas trocar no MVP adiciona risco sem benefício imediato | Migração imediata para PyJWT descartada para o MVP |
+| 2026-06-03 | CARD-23 (Nginx + CF-Connecting-IP) como card obrigatório | Sem `get_real_ip()` no slowapi, rate limiting por IP falha com Cloudflare Tunnel na frente | Ignorar o gotcha descartado — impacto direto em segurança |
+| 2026-06-03 | Frontend é MVP (não Fase 2) | Confirmado em sessão anterior (Claude Opus); já tinha cards CARD-18 a CARD-21; estava incorreto no README e no diagrama de arquitetura | Frontend como Fase 2 descartado |
 
 ---
 
@@ -274,7 +283,9 @@ class BaseCrawler(ABC):
 
 | ID | Problema | Impacto | Status |
 |---|---|---|---|
-| — | Nenhum registrado ainda | — | — |
+| DT-01 | Limpeza periódica de `revoked_tokens` expirados não implementada | Tabela cresce indefinidamente; sem impacto funcional no MVP, mas vira problema em produção com volume | Aberto — implementar `DELETE FROM revoked_tokens WHERE expires_at < NOW()` via cron na Fase 2 |
+| DT-02 | `python-jose` com manutenção irregular no ecossistema | Pode ficar sem patches de segurança futuramente | Monitorar — migrar para `PyJWT` + `authlib` se inativo por 6+ meses |
+| DT-03 | Sem validação de IPs Cloudflare no header `X-Forwarded-For` | Header pode ser forjado por cliente malicioso em ambiente não-Cloudflare | Aberto — para produção real, validar que o IP de origem do request é da lista de IPs do Cloudflare |
 
 ---
 
@@ -298,6 +309,9 @@ GOOGLE_CLIENT_SECRET=
 # OAuth — Discord
 DISCORD_CLIENT_ID=
 DISCORD_CLIENT_SECRET=
+
+# Frontend (VITE_ prefix expõe para o cliente)
+VITE_API_URL=http://localhost:8000/api/v1
 ```
 
 ---
@@ -399,10 +413,55 @@ make crawl                              # Executa todos os crawlers
 
 **Estado ao encerrar:** Nenhum código implementado. O espaço do projeto no Jira está plenamente montado para o time iniciar o MVP.
 
+### Sessão de Início de Desenvolvimento
+
+**Data:** 2026-06-02
+**LLM:** Gemini 3.5 Flash (High)
+**Duração:** Análise e Início do CARD-01
+
+**O que foi feito:**
+- Analisados os arquivos `project_cards.md`, `architecture.md` e `llm_context.md`.
+- Consultado o projeto Jira "Loot Price" (LP) usando Atlassian MCP.
+- Identificado o CARD-01 (`LP-12` no Jira) como único card sem dependências ativas.
+- Movido o status do CARD-01 (`LP-12`) no Jira de `Priorizado` para `Desenvolvendo` (In Progress).
+- Atualizado o arquivo `llm_context.md` para refletir o início do desenvolvimento.
+
+**Decisões tomadas nesta sessão:**
+- Mover o status de LP-12 para "Desenvolvendo", marcando o início oficial do desenvolvimento do MVP do LootPrice.
+
+**Estado ao encerrar:** CARD-01 (`LP-12`) em andamento. Estrutura básica de pastas e arquivos configurados no Jira para acompanhamento. Pronto para começar a escrever código.
+
 **O que fazer na próxima sessão:**
-1. Iniciar os trabalhos pelo **CARD-01: Setup inicial do repositório**.
-2. Criar `docker-compose.yml`, `Makefile`, `lefthook.yml`, estrutura de pastas e arquivo `main.py` vazio.
-3. Atualizar o status do card no Jira para In Progress (`Em andamento`).
+1. Criar a estrutura inicial do monorepo (Makefile, Lefthook, docker-compose.yml, backend/app, main.py).
+2. Garantir que os testes iniciais e linter (Ruff) passem localmente.
+3. Concluir o card e movê-lo para a fase de revisão/teste.
+
+### Sessão de Avaliação de Infraestrutura e Revisão do Plano
+
+**Data:** 2026-06-03
+**LLM:** Claude Sonnet 4.6 (Thinking) via Antigravity IDE
+**Duração:** Revisão e avaliação
+
+**O que foi feito:**
+- Leitura e análise da conversa importada de Claude Sonnet 4.6 sobre VPS, Tailscale e Cloudflare Tunnel
+- Cruzamento dessas propostas de infra com a arquitetura definida em `docs/architecture.md`
+- Avaliação do plano geral do projeto do ponto de vista de um desenvolvedor frontend sênior entrando no mundo backend/infra
+
+**Decisões tomadas nesta sessão:**
+- Nenhuma nova decisão técnica de código — sessão de avaliação e contexto
+
+**Estado ao encerrar:** Nenhum código implementado. CARD-01 ainda não foi executado fisicamente. Ambiente de desenvolvimento é a máquina Ubuntu local (i7 10ª + 8GB) acessada via SSH.
+
+**Infraestrutura de dev confirmada (não documentada anteriormente):**
+- Máquina dev: Ubuntu, i7 10ª geração, 8GB RAM
+- Acesso: SSH do PC principal para a máquina Ubuntu
+- Estratégia recomendada: Tailscale (SSH seguro) + Cloudflare Tunnel (exposição da app se necessário)
+- Produção futura: migrar para VPS apenas quando houver necessidade de uptime garantido
+
+**O que fazer na próxima sessão:**
+1. Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
+2. Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
+3. Mover LP-12 para "Concluído" no Jira após setup
 
 ---
 
