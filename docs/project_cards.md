@@ -1302,17 +1302,26 @@ frontend/
 ```
 Tipo: Task
 Épico: EPIC-8
-Prioridade: Medium
+Prioridade: Low
 Labels: infra, deploy, security
 Summary: chore(infra): configurar Nginx com suporte a Cloudflare IP passthrough
 Depende de: CARD-17
+Status: BLOQUEADO — aguardando aquisição de domínio
 ```
+
+> ⚠️ **BLOQUEADO — Decisão de 2026-06-09:** Este card requer um domínio registrado e configurado no Cloudflare para poder ser testado e validado. Enquanto não houver domínio, este card fica em prioridade **Low** e não deve ser executado.
+>
+> **Mitigação parcial já aplicada:** A função `get_real_ip()` foi absorvida pelo **CARD-17** (slowapi), garantindo que o backend já esteja preparado para ler `X-Forwarded-For` de qualquer proxy. O restante deste card (configuração do Nginx + Cloudflare) só é executado quando houver domínio ativo.
 
 **Descrição:**
 
 Quando a aplicação está atrás do Cloudflare Tunnel + Nginx, o IP real do cliente não chega diretamente ao FastAPI — chega o IP do proxy Cloudflare. Sem tratamento correto, o `slowapi` aplicará rate limiting por IP do Cloudflare (não do cliente real), tornando o throttling ineficaz ou bloqueando todos os usuários ao mesmo tempo.
 
 Este card configura o Nginx para extrair o IP real do header `CF-Connecting-IP` (enviado pelo Cloudflare) e o FastAPI/slowapi para usar esse IP como chave de rate limiting.
+
+**Pré-requisito obrigatório (não estava documentado anteriormente):**
+- Domínio próprio registrado e adicionado à conta Cloudflare (plano gratuito)
+- Cloudflare Tunnel ativo conectando o domínio ao servidor Ubuntu
 
 **Arquivos a criar/editar:**
 
@@ -1322,7 +1331,7 @@ lootprice/
 │   ├── nginx.conf              ← configuração principal do Nginx
 │   └── sites/
 │       └── lootprice.conf      ← virtual host com proxy_pass para FastAPI
-└── docker-compose.yml          ← adicionar service nginx (opcional para dev, obrigatório para prod)
+└── docker-compose.yml          ← adicionar service nginx (obrigatório para prod)
 ```
 
 **Configuração Nginx obrigatória:**
@@ -1345,14 +1354,13 @@ server {
 }
 ```
 
-**Configuração do slowapi (atualizar CARD-17):**
+**Nota sobre `get_real_ip()` — já implementada no CARD-17:**
+
+A função abaixo foi absorvida pelo CARD-17 e deve ser implementada lá. Este card apenas garante que o Nginx repasse o header correto para que ela funcione em produção com Cloudflare:
 
 ```python
-# rate_limit.py — key_func deve ler X-Forwarded-For quando disponível
-from slowapi.util import get_remote_address
-
+# rate_limit.py — já implementado no CARD-17
 def get_real_ip(request: Request) -> str:
-    # CF-Connecting-IP já foi reescrito pelo Nginx para X-Forwarded-For
     forwarded_for = request.headers.get("X-Forwarded-For")
     if forwarded_for:
         return forwarded_for.split(",")[0].strip()
@@ -1361,18 +1369,18 @@ def get_real_ip(request: Request) -> str:
 
 **Critérios de Aceitação:**
 
+- [ ] **Pré-requisito:** domínio ativo no Cloudflare antes de iniciar
 - [ ] Nginx configurado e documentado em `nginx/`
 - [ ] `CF-Connecting-IP` repassado como `X-Real-IP` e `X-Forwarded-For` para o backend
-- [ ] `slowapi` usa `get_real_ip()` como `key_func` (não `get_remote_address` padrão)
+- [ ] `slowapi` usa `get_real_ip()` como `key_func` — já implementado no CARD-17, apenas validar integração
 - [ ] Teste manual: logs do FastAPI exibem IP do cliente real, não IP do Cloudflare
 - [ ] `docker-compose.yml` inclui service `nginx` apontando para o backend
 - [ ] Documentado no `README.md` na seção de deploy
 
 **Não fazer:**
-- Não confiar cegamente em qualquer header `X-Forwarded-For` sem validar que vem do Cloudflare (para prod, usar lista de IPs do Cloudflare)
-- Não adicionar configuração de SSL no Nginx — o Cloudflare Tunnel já gerencia HTTPS
-
-> **📝 Nota para o desenvolvedor:** Este card é relevante mesmo usando a máquina Ubuntu local com Cloudflare Tunnel. Sem ele, o rate limiting funciona localmente mas falha em produção.
+- Não iniciar sem ter domínio e Cloudflare Tunnel configurados
+- Não confiar cegamente em qualquer `X-Forwarded-For` sem validar IPs do Cloudflare (para prod real)
+- Não adicionar SSL no Nginx — o Cloudflare Tunnel já gerencia HTTPS
 
 ---
 

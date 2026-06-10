@@ -9,8 +9,8 @@
 
 | Campo | Valor |
 |---|---|
-| **Versão** | 0.1.3 |
-| **Última atualização** | 2026-06-03 |
+| **Versão** | 0.1.4 |
+| **Última atualização** | 2026-06-09 |
 | **Atualizado por** | Claude Sonnet 4.6 (Thinking) via Antigravity IDE |
 | **Fase atual** | Desenvolvimento — CARD-01 em andamento (não iniciado fisicamente) |
 | **Próximo card** | CARD-01: Setup inicial do repositório (Aguardando implementação física) |
@@ -276,6 +276,8 @@ class BaseCrawler(ABC):
 | 2026-06-03 | Manter `python-jose` no MVP, monitorar migração | `PyJWT` + `authlib` são alternativas mais ativas; mas trocar no MVP adiciona risco sem benefício imediato | Migração imediata para PyJWT descartada para o MVP |
 | 2026-06-03 | CARD-23 (Nginx + CF-Connecting-IP) como card obrigatório | Sem `get_real_ip()` no slowapi, rate limiting por IP falha com Cloudflare Tunnel na frente | Ignorar o gotcha descartado — impacto direto em segurança |
 | 2026-06-03 | Frontend é MVP (não Fase 2) | Confirmado em sessão anterior (Claude Opus); já tinha cards CARD-18 a CARD-21; estava incorreto no README e no diagrama de arquitetura | Frontend como Fase 2 descartado |
+| 2026-06-09 | Cloudflare Tunnel mantido na arquitetura futura, bloqueado agora | Sem domínio registrado, Cloudflare Tunnel não pode ser usado. Ferramenta certa para o momento errado. Manter no plano de produção | Remover Cloudflare da arquitetura descartado — ainda é a solução mais segura e gratuita para exposição pública futura |
+| 2026-06-09 | CARD-23 rebaixado para prioridade Low; `get_real_ip()` movida para CARD-17 | Sem Cloudflare ativo, CARD-23 não pode ser testado. A função `get_real_ip()` é útil para qualquer proxy e deve ser implementada no CARD-17 | Executar CARD-23 agora descartado — depende de domínio |
 
 ---
 
@@ -286,6 +288,7 @@ class BaseCrawler(ABC):
 | DT-01 | Limpeza periódica de `revoked_tokens` expirados não implementada | Tabela cresce indefinidamente; sem impacto funcional no MVP, mas vira problema em produção com volume | Aberto — implementar `DELETE FROM revoked_tokens WHERE expires_at < NOW()` via cron na Fase 2 |
 | DT-02 | `python-jose` com manutenção irregular no ecossistema | Pode ficar sem patches de segurança futuramente | Monitorar — migrar para `PyJWT` + `authlib` se inativo por 6+ meses |
 | DT-03 | Sem validação de IPs Cloudflare no header `X-Forwarded-For` | Header pode ser forjado por cliente malicioso em ambiente não-Cloudflare | Aberto — para produção real, validar que o IP de origem do request é da lista de IPs do Cloudflare |
+| DT-04 | CARD-23 bloqueado por ausência de domínio registrado | Cloudflare Tunnel não pode ser configurado sem domínio; rate limiting por IP real em produção fica pendente | Bloqueado — `get_real_ip()` implementada no CARD-17 como mitigação parcial; CARD-23 completo só após aquisição de domínio |
 
 ---
 
@@ -462,6 +465,36 @@ make crawl                              # Executa todos os crawlers
 1. Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
 2. Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
 3. Mover LP-12 para "Concluído" no Jira após setup
+
+### Sessão de Análise de Infraestrutura — Cloudflare e Cards
+
+**Data:** 2026-06-09
+**LLM:** Claude Sonnet 4.6 (Thinking) via Antigravity IDE
+**Duração:** Análise e tomada de decisão
+
+**O que foi feito:**
+- Analisado o impacto da ausência de domínio registrado na arquitetura planejada
+- Verificado que o Cloudflare Tunnel requer domínio próprio para funcionar — sem ele, a ferramenta está bloqueada
+- Avaliados os cards afetados por essa restrição atual
+- Corrigidas edições indevidas do Gemini que havia removido decisões não relacionadas ao Cloudflare
+
+**Decisões tomadas nesta sessão:**
+- Cloudflare Tunnel **mantido** na arquitetura de produção futura — ferramenta certa, momento errado
+- CARD-23 rebaixado para prioridade **Low** — não pode ser testado sem domínio
+- Função `get_real_ip()` do CARD-23 absorvida pelo **CARD-17** (slowapi) — útil para qualquer proxy
+- Novo débito técnico **DT-04** registrado sobre o bloqueio do CARD-23
+
+**Cards impactados:**
+- CARD-17 (slowapi): absorver `get_real_ip()` do CARD-23 — implementar na entrega do CARD-17
+- CARD-23 (Nginx + CF-Connecting-IP): rebaixado para Low — executar apenas após aquisição de domínio
+
+**Estado ao encerrar:** Nenhum código implementado. CARD-01 ainda não foi executado fisicamente. Análise de infra consolidada.
+
+**O que fazer na próxima sessão:**
+1. Executar CARD-01: criar estrutura física do monorepo (`docker-compose.yml`, `Makefile`, `lefthook.yml`, pastas `backend/` e `frontend/`, `main.py` vazio)
+2. Garantir que `ruff` e `lefthook` estejam funcionando localmente na máquina Ubuntu
+3. Mover LP-12 para "Concluído" no Jira após setup
+4. No CARD-17, implementar `get_real_ip()` que lê `X-Forwarded-For` (preparado para proxy futuro)
 
 ---
 
