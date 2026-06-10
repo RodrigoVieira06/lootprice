@@ -1,4 +1,4 @@
-name: Proteção de Branch — Bloqueia push direto na main
+name: Proteção de Branch — Bloqueia push direto na master
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Bloquear push direto na main
+      - name: Bloquear push direto na master
         # github.event.pull_request.merged é false (ou ausente) quando é um push direto
         # Pushes de merge de PR sempre têm o campo "merged" como true
         run: |

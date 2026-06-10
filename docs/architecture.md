@@ -825,18 +825,20 @@ Review contém:
   - 🏁 Veredicto: APROVADO / APROVADO COM RESSALVAS / REPROVADO
 ```
 
-### Git Workflow Obrigatório
+### Git Workflow Obrigatório (Ciclo de Vida do Card)
 
-> **⚠️ Regra para IAs e desenvolvedores:** Nenhum código vai direto para `main`. Sem exceções.
+> **⚠️ Regra para IAs e desenvolvedores:** Todo código deve seguir estritamente o fluxo de 9 passos abaixo. Nenhum push é permitido diretamente na branch principal `master`.
 
 ```
-1. git checkout -b feat/card-XX-descricao
-2. Commits incrementais na branch
-3. git push origin feat/card-XX-descricao
-4. gh pr create --base main
-5. Aguardar: ai-review postar comentário (automático)
-6. Aguardar: ci passar (lint + testes)
-7. Merge via GitHub (nunca via CLI diretamente)
+1. Mover o card no Jira para "Desenvolvendo" (transição ID 21 via MCP)
+2. Criar branch local: git checkout -b <prefixo>/<card-id>-descricao
+3. Desenvolver e realizar commits convencionais incrementais
+4. Realizar o push para a branch remota
+5. Abrir Pull Request (PR) contra a branch master
+6. Mover o card no Jira para "Revisando" (transição ID 31 via MCP)
+7. Executar/Aguardar review (AI review e CI status checks)
+8. Se aprovado (sem bloqueios e CI verde), aprovar e mergear o PR
+9. Mover o card no Jira para "Deployed" (transição ID 51 via MCP)
 ```
 
 **Padrão de nomes de branch:**
@@ -846,10 +848,10 @@ chore/<card-id>-descricao     docs/<card-id>-descricao
 refactor/<card-id>-descricao  test/<card-id>-descricao
 ```
 
-### Branch Protection Rules (GitHub UI — `main`)
+### Branch Protection Rules (GitHub UI — `master`)
 
 - ✅ Require pull request before merging
-- ✅ Require status checks: `ci / Backend`, `ci / Frontend`, `AI Code Review — LootPrice`
+- ✅ Require status checks: `ci / Backend (Python)`, `ci / Frontend (React/TypeScript)`, `AI Code Review — LootPrice`
 - ✅ Dismiss stale reviews on new commits
 - ✅ Block direct pushes (enforced também pelo `branch-check.yml`)
 

@@ -169,17 +169,28 @@ fix/card-07-auth-token-expiry
 chore/card-24-ai-code-review
 ```
 
-### Fluxo obrigatório para toda IA (ordem exata)
+### Fluxo Obrigatório de Desenvolvimento e Ciclo de Vida do Card (Ordem Exata)
 
-```
-1. Criar branch:   git checkout -b feat/card-XX-descricao
-2. Desenvolver:    commits incrementais na branch
-3. Push:           git push origin feat/card-XX-descricao
-4. Abrir PR:       gh pr create --base master --title "feat(modulo): descricao"
-5. Aguardar:       workflow ai-review postar comentário de revisão (automático)
-6. Aguardar:       workflow ci passar (automático)
-7. Merge:          somente após aprovação — nunca fazer merge manualmente sem CI verde
-```
+Toda IA assistente que iniciar uma tarefa DEVE executar e reportar os seguintes 9 passos nesta ordem exata:
+
+1. **Mover o card no Jira para "Desenvolvendo"**:
+   - Usar a ferramenta `transitionJiraIssue` no MCP do Jira para transicionar o card do status "Priorizado" para o status "Desenvolvendo" (transição ID `21`).
+2. **Criar uma nova branch**:
+   - Criar uma branch a partir de `master` seguindo o padrão de nomenclatura (ex: `feat/<card-id>-descricao-curta`).
+3. **Desenvolver e commitar as alterações**:
+   - Desenvolver o código com testes e documentação e fazer commits utilizando Conventional Commits.
+4. **Realizar o push para a branch remota**:
+   - Fazer o push da branch criada para o repositório remoto no GitHub.
+5. **Abrir o Pull Request (PR)**:
+   - Abrir o PR apontando para a branch `master` usando o template de PR do repositório.
+6. **Mover o card no Jira para "Revisando"**:
+   - Usar a ferramenta `transitionJiraIssue` no MCP do Jira para transicionar o card do status "Desenvolvendo" para o status "Revisando" (transição ID `31`).
+7. **Executar/Aguardar o Code Review**:
+   - Aguardar a execução automática do workflow `ai-review.yml` e a aprovação do CI (`ci.yml`). Em sessões de desenvolvimento com o Antigravity, o próprio assistente pode rodar ou simular o review e postar nos comentários do PR.
+8. **Aprovar e Mergear o PR**:
+   - Caso não haja bloqueios identificados no review da IA (nota geral de qualidade >= 8/10 e zero bloqueios), e todos os checks de status do CI passem, o PR deve ser aprovado e mergeado na branch `master`.
+9. **Mover o card no Jira para "Deployed"**:
+   - Usar a ferramenta `transitionJiraIssue` no MCP do Jira para transicionar o card para o status "Deployed" (transição ID `51`).
 
 ### Branch protection rules (configuradas no GitHub)
 
