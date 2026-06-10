@@ -1,0 +1,44 @@
+name: Proteção de Branch — Bloqueia push direto na master
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  block-direct-push:
+    name: Verificar se é merge de PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bloquear push direto na master
+        # github.event.pull_request.merged é false (ou ausente) quando é um push direto
+        # Pushes de merge de PR sempre têm o campo "merged" como true
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -1)
+            # Merge commits do GitHub têm formato "Merge pull request #N"
+            if echo "$COMMIT_MSG" | grep -qE "^Merge pull request #[0-9]+"; then
+              echo "✅ Push via merge de PR — permitido."
+              exit 0
+            fi
+            echo ""
+            echo "🚫 PUSH DIRETO NA MASTER DETECTADO E BLOQUEADO"
+            echo "==============================================="
+            echo ""
+            echo "Mensagem do commit: $COMMIT_MSG"
+            echo ""
+            echo "REGRA DO PROJETO: Todo código deve passar por um Pull Request."
+            echo ""
+            echo "Como corrigir:"
+            echo "  1. Crie uma branch: git checkout -b feat/sua-feature"
+            echo "  2. Faça seus commits na branch"
+            echo "  3. Abra um PR: gh pr create --base master"
+            echo "  4. Aguarde o review da IA (que postará a nota de qualidade e feedbacks nos comentários do PR) e o CI passar"
+            echo "  5. Faça o merge pelo GitHub"
+            echo ""
+            echo "Para IAs assistentes: NUNCA sugira push direto na master."
+            echo "Padrão de branch: feat/<card-id>-descricao"
+            echo "                  fix/<card-id>-descricao"
+            echo "                  chore/<card-id>-descricao"
+            exit 1
+          fi
