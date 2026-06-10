@@ -757,9 +757,8 @@ Prompt: "Tira screenshot do estado atual e analisa o contraste de cores"
 
 | Arquivo | Gatilho | Finalidade |
 |---|---|---|
-| `ci.yml` | PR para `main`, push na `main` | Lint (Ruff) + Testes (Pytest) + Build React |
-| `ai-review.yml` | PR aberto/atualizado para `main` | Review automático por Gemini 2.0 Flash — posta nota, bloqueios e sugestões como comentário |
-| `branch-check.yml` | Push na `main` | Bloqueia push direto; exige PR |
+| `ci.yml` | PR para `master`, push na `master` | Lint (Ruff) + Testes (Pytest) + Build React |
+| `ai-review.yml` | PR aberto/atualizado para `master` | Review automático por Gemini 2.0 Flash — posta nota, bloqueios e sugestões como comentário |
 
 ### Pipeline CI (`ci.yml`)
 
@@ -853,7 +852,7 @@ refactor/<card-id>-descricao  test/<card-id>-descricao
 - ✅ Require pull request before merging
 - ✅ Require status checks: `ci / Backend (Python)`, `ci / Frontend (React/TypeScript)`, `AI Code Review — LootPrice`
 - ✅ Dismiss stale reviews on new commits
-- ✅ Block direct pushes (enforced também pelo `branch-check.yml`)
+- ✅ Block direct pushes (configurado nas regras de Branch Protection do GitHub)
 
 ### Git Hooks (Lefthook)
 

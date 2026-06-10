@@ -103,7 +103,6 @@ Makefile, Lefthook, GitHub Actions, Jira, MCP GitHub, MCP Jira, MCP DevTools
 |---|---|
 | `.github/workflows/ci.yml` | Lint (Ruff) + Testes (Pytest) + Build frontend em cada PR |
 | `.github/workflows/ai-review.yml` | Review automático por Gemini 2.0 Flash em cada PR — posta nota, bloqueios, sugestões |
-| `.github/workflows/branch-check.yml` | Bloqueia push direto na `master` com mensagem de erro explicativa |
 | `.github/PULL_REQUEST_TEMPLATE.md` | Template de PR com checklist de qualidade preenchido pelo dev |
 | GitHub Branch Protection | `master` requer PR + CI verde + ai-review antes de qualquer merge |
 
@@ -194,7 +193,7 @@ Toda IA assistente que iniciar uma tarefa DEVE executar e reportar os seguintes 
 
 ### Branch protection rules (configuradas no GitHub)
 
-- `master` requer PR obrigatório — push direto é bloqueado pelo `branch-check.yml`
+- `master` requer PR obrigatório — push direto é bloqueado pelas regras de Branch Protection do GitHub
 - Status checks obrigatórios: `ci / Backend (Python)`, `ci / Frontend`, `AI Code Review — LootPrice`
 - Stale reviews são descartados ao novo push
 
