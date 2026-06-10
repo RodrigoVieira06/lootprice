@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   ai-review:
-    name: Revisão de Código por IA (Gemini)
+    name: Revisão de Código por IA (Groq — Llama 3.3 70B)
     runs-on: ubuntu-latest
 
     # Permissões necessárias para postar comentários no PR
@@ -55,9 +55,9 @@ jobs:
           head -c 6000 docs/architecture.md > /tmp/architecture_trunc.txt
           echo "Contexto carregado."
 
-      - name: Executar AI Review via Gemini API
+      - name: Executar AI Review via Groq API
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}

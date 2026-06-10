@@ -12,9 +12,9 @@ import requests
 
 def main():
     # Lê variáveis de ambiente
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
-        print("❌ GEMINI_API_KEY não configurada. Verifique os secrets do repositório.")
+        print("❌ GROQ_API_KEY não configurada. Verifique os secrets do repositório.")
         sys.exit(1)
 
     pr_title = os.environ.get("PR_TITLE", "")
@@ -79,7 +79,7 @@ def main():
         "## Formato do Review (use EXATAMENTE esta estrutura em markdown):\n\n"
         "## 🤖 AI Code Review — LootPrice\n\n"
         f"**PR #{pr_number} — {pr_title}**\n"
-        "**Revisor:** Gemini AI | **Data:** (data atual)\n\n"
+        "**Revisor:** Groq AI (Llama 3.3 70B) | **Data:** (data atual)\n\n"
         "---\n\n"
         "### 📊 Nota Geral: X/10\n\n"
         "> Justificativa resumida da nota em 1-2 frases.\n\n"
@@ -126,26 +126,36 @@ def main():
         "Questões sobre o review? Fale com o mantenedor do repositório.*\n"
     )
 
-    # Chama a API do Gemini com retry + exponential backoff para erros 429
-    url = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-2.0-flash:generateContent?key={api_key}"
-    )
+    # Chama a API do Groq (compatível com OpenAI) com retry + exponential backoff para erros 429
+    url = "https://api.groq.com/openai/v1/chat/completions"
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
 
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "temperature": 0.3,
-            "maxOutputTokens": 4096,
-        },
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "Você é um revisor de código sênior. "
+                    "Responda SEMPRE em português brasileiro com o formato markdown solicitado."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.3,
+        "max_tokens": 4096,
     }
 
     MAX_RETRIES = 5
-    BASE_DELAY = 15  # segundos — respeita o rate limit do tier gratuito do Gemini
+    BASE_DELAY = 10  # segundos — o Groq free tier tem ~30 RPM, backoff mais curto é suficiente
 
     for attempt in range(1, MAX_RETRIES + 1):
-        print(f"🔄 Tentativa {attempt}/{MAX_RETRIES} — chamando Gemini API...")
-        response = requests.post(url, json=payload, timeout=120)
+        print(f"🔄 Tentativa {attempt}/{MAX_RETRIES} — chamando Groq API...")
+        response = requests.post(url, json=payload, headers=headers, timeout=120)
 
         if response.status_code == 429:
             # Respeita o cabeçalho Retry-After se presente, senão usa backoff exponencial
@@ -154,11 +164,11 @@ def main():
                 wait = int(retry_after)
                 print(f"⏳ Rate limit atingido. API solicitou aguardar {wait}s (Retry-After).")
             else:
-                wait = BASE_DELAY * (2 ** (attempt - 1))  # 15s, 30s, 60s, 120s, 240s
+                wait = BASE_DELAY * (2 ** (attempt - 1))  # 10s, 20s, 40s, 80s, 160s
                 print(f"⏳ Rate limit atingido (429). Aguardando {wait}s antes de tentar novamente...")
 
             if attempt == MAX_RETRIES:
-                print("❌ Todas as tentativas esgotadas. Verifique a quota da GEMINI_API_KEY.")
+                print("❌ Todas as tentativas esgotadas. Verifique a quota da GROQ_API_KEY.")
                 response.raise_for_status()
 
             time.sleep(wait)
@@ -169,7 +179,7 @@ def main():
         break  # Sucesso — sai do loop
 
     result = response.json()
-    review_text = result["candidates"][0]["content"]["parts"][0]["text"]
+    review_text = result["choices"][0]["message"]["content"]
 
     # Salva o review para o próximo step
     with open("/tmp/ai_review.md", "w", encoding="utf-8") as f:
