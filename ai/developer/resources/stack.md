@@ -52,6 +52,14 @@
 
 ---
 
+## Métricas & Observabilidade
+
+| Tecnologia | Finalidade |
+|---|---|
+| PostHog | Tudo-em-um: Product Analytics, Session Replay, Feature Flags e error tracking básico |
+
+---
+
 ## Tooling & DevOps
 
 | Ferramenta | Finalidade |
@@ -86,6 +94,10 @@ DISCORD_CLIENT_SECRET=
 
 # Frontend (prefixo VITE_ expõe para o cliente)
 VITE_API_URL=http://localhost:8000/api/v1
+
+# PostHog
+VITE_POSTHOG_KEY=
+VITE_POSTHOG_HOST=https://us.i.posthog.com
 ```
 
 ---
