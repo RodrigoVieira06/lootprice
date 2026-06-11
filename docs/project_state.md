@@ -125,6 +125,8 @@ lootprice/
 | 2026-06-10 | PostgreSQL bound em `127.0.0.1` no compose | Segurança: banco não escuta em todos os IPs | Expor na porta pública |
 | 2026-06-10 | AI Review via Skill em vez de GitHub Actions | `ai-review.yml` com erros persistentes. Skill via MCP GitHub tem contexto superior e zero infraestrutura de Actions | Manter `ai-review.yml` |
 | 2026-06-10 | `llm_context.md` decomposto em `ai/developer/SKILL.md` + `docs/project_state.md` | Arquivo único de 650+ linhas misturava instruções e estado, causando falhas de contexto | Manter arquivo monolítico |
+| 2026-06-10 | PostHog para Métricas e Analytics | Centraliza Product Analytics, Session Replay e Feature Flags com esforço mínimo e plano gratuito amplo | Umami + Sentry + Admin Dashboard próprio |
+
 
 ---
 
