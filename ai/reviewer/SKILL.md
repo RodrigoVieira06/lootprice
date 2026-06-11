@@ -125,7 +125,9 @@ Após postar, informe ao usuário:
 - **Nunca** aprove um PR com bloqueios identificados — o veredicto deve ser REPROVADO
 - Se o CI **não passou**, mencione como ponto crítico no review
 - Se a descrição do PR estiver **vazia ou incompleta**, aponte como sugestão (não bloqueio)
+- **Sempre** verifique o estado do PR (`state` ou `merged`) no GitHub antes de iniciar a análise. **Nunca** faça revisões ou poste comentários em Pull Requests que já foram fechados ou mergeados
 - Responda **sempre em português brasileiro**
+
 
 ---
 

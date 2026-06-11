@@ -55,6 +55,7 @@ Antes de qualquer tarefa, leia:
 - Testes unitários para toda nova funcionalidade (`tests/test_<módulo>.py`)
 - Conventional Commits em todo commit e título de PR
 - Variáveis sensíveis via `.env` + `pydantic-settings` — nunca hardcoded
+- Antes de iniciar o desenvolvimento, sempre atualizar a branch local (dar pull na master) e criar uma nova branch a partir dela, garantindo que o ponto de partida seja limpo
 
 ### ❌ NUNCA
 - `float` para dinheiro
@@ -66,6 +67,8 @@ Antes de qualquer tarefa, leia:
 - Criar tabelas `price_history`, `wishlists` (Fase 3 — fora do escopo)
 - Crawlers para G2A ou Eneba (Fase 3 — complexidade de anti-bot)
 - Push direto na `master` ou qualquer operação que bypasse PR
+- Commitar, fazer push ou reutilizar uma branch cujo Pull Request associado já foi mergeado ou fechado no GitHub
+
 
 ---
 
