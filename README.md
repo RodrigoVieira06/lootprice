@@ -98,10 +98,14 @@ Documentação Swagger em `http://localhost:8000/docs`
 
 ```
 lootprice/
+├── ai/
+│   ├── README.md             # Índice das ferramentas de IA
+│   ├── developer/SKILL.md    # Skill: dev sênior LootPrice
+│   └── reviewer/SKILL.md     # Skill: revisor de código
 ├── docs/
 │   ├── architecture.md       # Visão arquitetural completa
 │   ├── database_schema.md    # Schema do banco de dados
-│   ├── llm_context.md        # Contexto vivo para sessões com LLMs
+│   ├── project_state.md      # Estado vivo do projeto (cards, decisões, última sessão)
 │   └── project_cards.md      # Cards do Jira (MVP)
 ├── backend/
 │   ├── app/
@@ -109,13 +113,10 @@ lootprice/
 │   │   ├── core/             # Config, DB, segurança, dependências
 │   │   ├── models/           # Tabelas SQLModel
 │   │   ├── schemas/          # DTOs Pydantic
-│   │   └── crawlers/         # Scrapers por loja
-│   ├── migrations/           # Alembic
-│   ├── tests/
-│   ├── main.py
-│   └── requirements.txt
-├── frontend/                 # React + TypeScript (MVP)
-├── nginx/                    # Configuração do Nginx (proxy reverso)
+│   └─── crawlers/         # Scrapers por loja
+├── .github/
+│   ├── workflows/ci.yml      # CI: lint + testes
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── docker-compose.yml
 ├── Makefile
 └── lefthook.yml
@@ -154,11 +155,15 @@ docs(schema): atualizar modelagem da tabela prices
 
 Este projeto usa MCP (Model Context Protocol) extensivamente:
 
-- **GitHub MCP** — criar issues, revisar PRs, consultar histórico
+- **GitHub MCP** — criar issues, abrir PRs, comentar, verificar CI
 - **Jira MCP** — gerenciar cards e sprints via chat
 - **DevTools MCP** — inspecionar frontend em tempo real
 
-Ao iniciar uma sessão com qualquer LLM, forneça o arquivo [`docs/llm_context.md`](docs/llm_context.md) como contexto. Ele contém o estado atual do projeto, decisões tomadas e instruções de comportamento para a IA.
+As ferramentas de IA do projeto estão organizadas em [`ai/`](ai/README.md):
+- **[`ai/developer/SKILL.md`](ai/developer/SKILL.md)** — skill que transforma qualquer IA CLI em desenvolvedor sênior do LootPrice
+- **[`ai/reviewer/SKILL.md`](ai/reviewer/SKILL.md)** — skill de review: analisa PRs via MCP GitHub e posta review estruturado
+
+O estado atual do projeto (cards, decisões, última sessão) está em [`docs/project_state.md`](docs/project_state.md).
 
 ---
 

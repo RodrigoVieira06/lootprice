@@ -1,0 +1,160 @@
+# LootPrice — Estado do Projeto
+
+> **Para qualquer LLM que ler este arquivo:** Este é o documento de estado vivo do projeto.
+> Contém apenas dados — o que foi feito, o que está em progresso e decisões tomadas.
+> As **instruções de como se comportar** estão em `ai/developer/SKILL.md`.
+> Atualize este arquivo ao encerrar qualquer sessão onde arquivos foram criados, cards movidos ou decisões tomadas.
+
+---
+
+## Metadados
+
+| Campo | Valor |
+|---|---|
+| **Versão** | 0.2.0 |
+| **Última atualização** | 2026-06-10 |
+| **Atualizado por** | Claude Sonnet 4.6 (Thinking) via Antigravity IDE |
+| **Fase atual** | Desenvolvimento — CARD-01 em andamento |
+| **Próximos cards** | CARD-02 (CI), CARD-03 (PostgreSQL + Alembic), CARD-05 (model users) |
+
+---
+
+## Como atualizar este arquivo
+
+Ao final de qualquer sessão onde ocorreu ao menos um dos itens abaixo, atualize as seções marcadas:
+
+- Arquivo criado, editado ou deletado → **Estrutura de Arquivos**
+- Card iniciado, concluído ou bloqueado → **Estado dos Cards**
+- Decisão técnica tomada → **Decisões Tomadas**
+- Bug ou bloqueio encontrado → **Débitos e Problemas**
+- Sessão encerrada → **Última Sessão**
+
+---
+
+## Estado dos Cards
+
+### Em Progresso
+```
+CARD-01 [LP-12] chore(infra): setup inicial do repositório monorepo
+  Branch: chore/card-01-monorepo-setup
+  Desde: 2026-06-02
+  Status: Estrutura física criada e testada localmente. Docker pendente.
+```
+
+### Concluídos
+```
+(nenhum)
+```
+
+### Bloqueados
+```
+CARD-23 [LP-31] chore(infra): Nginx + CF-Connecting-IP
+  Motivo: Requer domínio registrado para Cloudflare Tunnel. Ver DT-04.
+  Prioridade rebaixada para Low.
+```
+
+### Próximos (sem bloqueio ativo)
+```
+CARD-02 [LP-14] chore(ci): pipeline CI com GitHub Actions
+CARD-03 [LP-9]  feat(database): PostgreSQL + Alembic setup
+CARD-05 [LP-10] feat(database): model users com OAuth e RBAC
+```
+
+---
+
+## Estrutura de Arquivos Atual
+
+```
+lootprice/
+├── .github/
+│   ├── workflows/ci.yml              ✅ Lint (Ruff) + Pytest
+│   └── PULL_REQUEST_TEMPLATE.md      ✅ Template para IAs que abrem PRs
+│
+├── ai/
+│   ├── README.md                     ✅ Mapa das ferramentas de IA
+│   ├── developer/
+│   │   ├── SKILL.md                  ✅ Skill: desenvolvedor sênior LootPrice
+│   │   └── resources/
+│   │       ├── stack.md              ✅ Referência da stack completa
+│   │       └── workflow.md           ✅ Workflow de 9 passos + padrões
+│   └── reviewer/
+│       ├── SKILL.md                  ✅ Skill: revisor de código
+│       └── resources/
+│           ├── checklist.md          ✅ Checklist de conformidade
+│           └── review_format.md      ✅ Formato do review
+│
+├── docs/
+│   ├── architecture.md               ✅ Arquitetura completa
+│   ├── database_schema.md            ✅ Schema com todas as tabelas
+│   ├── project_state.md              ✅ Este arquivo
+│   └── project_cards.md              ✅ 23 cards com critérios de aceitação
+│
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py, api/, core/, models/, schemas/, crawlers/  ✅
+│   ├── tests/__init__.py, test_main.py  ✅
+│   ├── .env.example                  ✅
+│   ├── main.py                       ✅
+│   ├── requirements.txt              ✅
+│   └── ruff.toml                     ✅
+│
+├── docker-compose.yml                ✅ PostgreSQL 15 em 127.0.0.1
+├── Makefile                          ✅
+├── lefthook.yml                      ✅
+└── README.md                         ✅
+```
+
+---
+
+## Decisões Tomadas
+
+| Data | Decisão | Motivo | Alternativa Descartada |
+|---|---|---|---|
+| 2026-05 | Monorepo | 1 dev + LLM-assisted; contexto unificado | Multi-repo |
+| 2026-05 | Alembic obrigatório desde o dia 1 | Evitar debt de schema sem rastreamento | `create_all` em produção |
+| 2026-05 | `prices` como snapshot (sem histórico) | Simplicidade MVP; histórico é Fase 3 | Tabela append-only |
+| 2026-05 | `canonical_name` editável pelo admin | Normalização automática falha em edge cases | Só dedup automático |
+| 2026-05 | `NUMERIC(10,2)` para preços | Precisão exata para dinheiro | `Float` |
+| 2026-05 | `slowapi` para rate limiting desde o MVP | API pública sem throttle é risco imediato | Sem rate limiting |
+| 2026-06-01 | Migração para Jira | Gestão de backlog centralizada | GitHub Projects |
+| 2026-06-03 | `revoked_tokens` no schema do MVP | Refresh tokens sem revogação são risco real | Redis para blacklist |
+| 2026-06-03 | Ubuntu físico como dev (não VPS) | i7 10ª + 8GB — hardware superior a VPS nessa faixa | VPS paga |
+| 2026-06-03 | Tailscale + Cloudflare Tunnel como infra | SSH seguro sem IP fixo; HTTPS sem abrir portas | DDNS + port forwarding |
+| 2026-06-03 | Manter `python-jose` no MVP | Trocar adiciona risco sem benefício imediato | Migração imediata para PyJWT |
+| 2026-06-09 | CARD-23 rebaixado para Low | Cloudflare Tunnel bloqueado sem domínio. `get_real_ip()` absorvida pelo CARD-17 | Executar CARD-23 agora |
+| 2026-06-10 | PostgreSQL bound em `127.0.0.1` no compose | Segurança: banco não escuta em todos os IPs | Expor na porta pública |
+| 2026-06-10 | AI Review via Skill em vez de GitHub Actions | `ai-review.yml` com erros persistentes. Skill via MCP GitHub tem contexto superior e zero infraestrutura de Actions | Manter `ai-review.yml` |
+| 2026-06-10 | `llm_context.md` decomposto em `ai/developer/SKILL.md` + `docs/project_state.md` | Arquivo único de 650+ linhas misturava instruções e estado, causando falhas de contexto | Manter arquivo monolítico |
+
+---
+
+## Débitos Técnicos e Problemas Conhecidos
+
+| ID | Problema | Impacto | Status |
+|---|---|---|---|
+| DT-01 | Limpeza periódica de `revoked_tokens` expirados não implementada | Tabela cresce indefinidamente — sem impacto funcional no MVP | Aberto — `DELETE WHERE expires_at < NOW()` via cron na Fase 2 |
+| DT-02 | `python-jose` com manutenção irregular | Pode ficar sem patches de segurança | Monitorar — migrar para `PyJWT` + `authlib` se inativo 6+ meses |
+| DT-03 | Sem validação de IPs Cloudflare no header `X-Forwarded-For` | Header pode ser forjado em ambiente não-Cloudflare | Aberto — validar IPs Cloudflare em produção |
+| DT-04 | CARD-23 bloqueado por ausência de domínio | Cloudflare Tunnel não funciona sem domínio; `get_real_ip()` implementada no CARD-17 como mitigação | Bloqueado — executar após aquisição de domínio |
+
+---
+
+## Última Sessão
+
+**Data:** 2026-06-10
+**LLM:** Claude Sonnet 4.6 (Thinking) via Antigravity IDE
+
+**O que foi feito:**
+- Removido `ai-review.yml` e scripts Python de review automático
+- Limpado `ci.yml`
+- Reformatado `PULL_REQUEST_TEMPLATE.md` como ferramenta para IAs que abrem PRs
+- Criada skill `ai/reviewer/SKILL.md` com recursos (checklist + formato)
+- Criada skill `ai/developer/SKILL.md` com recursos (stack + workflow)
+- Criado `ai/README.md` com mapa de todas as ferramentas de IA
+- Decomposto `docs/llm_context.md` em `ai/developer/SKILL.md` + `docs/project_state.md`
+- Atualizados `docs/architecture.md` e este arquivo
+
+**O que fazer na próxima sessão:**
+- Executar CARD-01 se pendente (Docker no host Ubuntu)
+- Abrir PR do CARD-01 e usar `ai/reviewer/SKILL.md` para validar o review em produção
+- Avançar para CARD-02 (pipeline CI) ou CARD-03 (PostgreSQL + Alembic)

@@ -1,6 +1,4 @@
 # CI — Lint & Tests
-# Nota: A revisão automática de código com nota de qualidade (grade) é realizada
-# em paralelo pelo workflow '.github/workflows/ai-review.yml' que comenta no PR.
 name: CI — Lint & Tests
 
 on:
