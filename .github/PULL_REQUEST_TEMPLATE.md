@@ -1,10 +1,10 @@
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
-  ║  INSTRUÇÃO PARA IAs QUE ESTÃO ABRINDO ESTE PR                  ║
+  ║  INSTRUÇÃO PARA ABERTURA ESTE PR                                 ║
   ║                                                                  ║
-  ║  Antes de enviar, preencha TODOS os campos abaixo com base     ║
-  ║  no trabalho realizado. Não deixe campos vazios ou com valores  ║
-  ║  de placeholder. Remova os comentários HTML após preencher.    ║
+  ║  Antes de enviar, preencha TODOS os campos abaixo com base       ║
+  ║  no trabalho realizado. Não deixe campos vazios ou com valores   ║
+  ║  de placeholder. Remova os comentários HTML após preencher.      ║
   ╚══════════════════════════════════════════════════════════════════╝
 -->
 
