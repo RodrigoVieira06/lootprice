@@ -1,18 +1,17 @@
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
-  ║  INSTRUÇÃO PARA IAs QUE ESTÃO ABRINDO ESTE PR                  ║
+  ║  INSTRUÇÃO PARA ABERTURA ESTE PR                                 ║
   ║                                                                  ║
-  ║  Antes de enviar, preencha TODOS os campos abaixo com base     ║
-  ║  no trabalho realizado. Não deixe campos vazios ou com valores  ║
-  ║  de placeholder. Remova os comentários HTML após preencher.    ║
+  ║  Antes de enviar, preencha TODOS os campos abaixo com base       ║
+  ║  no trabalho realizado. Não deixe campos vazios ou com valores   ║
+  ║  de placeholder. Remova os comentários HTML após preencher.      ║
   ╚══════════════════════════════════════════════════════════════════╝
 -->
 
-## 📋 Card Relacionado
+## 📋 Issue Relacionada
 
-<!-- Obrigatório: vincule o card do Jira e do GitHub Issue correspondente -->
-- Jira: [LP-XX](https://lootprice.atlassian.net/browse/LP-XX)
-- Card: CARD-XX — Descrição breve do card
+<!-- Obrigatório: vincule a issue do GitHub -->
+Closes #XX
 
 ---
 
@@ -51,7 +50,7 @@
 - [ ] Rotas FastAPI usam `async/await`
 - [ ] Type hints em todas as funções
 - [ ] Nenhum campo monetário usa `float` (usar `Decimal` / `NUMERIC`)
-- [ ] Alterações de schema têm migration Alembic (`make migrate-create`)
+- [ ] Alterações de schema têm migration Alembic
 - [ ] Nenhuma senha (`hashed_password`) retornada em responses de API
 - [ ] Nenhuma variável sensível hardcoded (usar `.env` + `pydantic-settings`)
 - [ ] `logging` usado, nunca `print()` em código de produção
@@ -65,7 +64,7 @@
 ### Geral
 - [ ] Título do PR segue Conventional Commits (`feat(auth): ...`)
 - [ ] CI passou (lint + testes)
-- [ ] `docs/project_state.md` atualizado se houve decisão técnica nova
+- [ ] `AGENTS.md` §15 atualizado se houve decisão técnica nova
 
 ---
 

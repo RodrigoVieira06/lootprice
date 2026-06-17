@@ -55,11 +55,11 @@
 
 | # | Regra | Como verificar |
 |---|---|---|
-| G-01 | Título do PR segue Conventional Commits | Formato: `tipo(escopo): descrição` — ex: `feat(auth): adiciona refresh token` |
-| G-02 | Branch segue o padrão do projeto | Formato: `feat/card-XX-descricao`, `fix/card-XX-descricao`, etc. |
-| G-03 | `docs/project_state.md` atualizado se houve decisão técnica | Se o PR muda arquitetura, stack ou processo — o arquivo deve refletir |
+| G-01 | Título do PR segue Conventional Commits | Formato: `tipo(escopo): descrição` |
+| G-02 | Branch segue o padrão do projeto | Formato: `feat/<descricao>`, `fix/<descricao>`, etc. |
+| G-03 | `AGENTS.md` §15 atualizado se houve decisão técnica | Se o PR muda arquitetura, stack ou processo — o arquivo deve refletir |
 | G-04 | Sem código comentado (dead code) | Blocos comentados que não são documentação devem ser removidos |
-| G-05 | CI passou (lint + testes) | Verificar via `get_pull_request_status` — checar `CI — Lint & Tests / Backend (Python)`; frontend só é obrigatório após o job ser reativado |
+| G-05 | CI passou (lint + testes) | Verificar via `get_pull_request_status` |
 
 ---
 

@@ -92,7 +92,7 @@
 | F-07 | Gerenciador frontend é pnpm | ✅ / ❌ / N/A |
 | G-01 | Conventional Commits no título do PR | ✅ / ❌ |
 | G-02 | Padrão de nome de branch correto | ✅ / ❌ |
-| G-03 | `docs/project_state.md` atualizado | ✅ / ❌ / N/A |
+| G-03 | `AGENTS.md` §15 atualizado | ✅ / ❌ / N/A |
 | G-05 | CI passou (lint + testes) | ✅ / ❌ / ⏳ Pendente |
 
 ---

@@ -441,7 +441,7 @@ Regras:
 
 ## Fases Futuras
 
-Estas tabelas não devem ser criadas no MVP sem novo card/decisão registrada em `docs/project_state.md`.
+Estas tabelas não devem ser criadas no MVP sem nova decisão registrada em `AGENTS.md` §15.
 
 ### Fase 2
 

@@ -17,8 +17,6 @@ Transforma qualquer IA CLI em um **desenvolvedor backend sênior do LootPrice** 
 
 Transforma qualquer IA CLI em um **desenvolvedor frontend sênior do LootPrice** — conhece a stack planejada, respeita contratos da API e não assume estrutura React antes de existir.
 
-Se a skill `caveman` estiver ativa junto com backend ou frontend, use as regras técnicas da skill LootPrice e o formato curto do Caveman.
-
 ### 🔍 [`reviewer/SKILL.md`](./reviewer/SKILL.md)
 **Quando usar:** Para revisar um Pull Request aberto.
 
@@ -29,13 +27,24 @@ Transforma qualquer IA CLI em um **revisor de código especializado** do LootPri
 @reviewer revisar https://github.com/RodrigoVieira06/lootprice/pull/42
 ```
 
+### 📋 [`scrum-master/SKILL.md`](./scrum-master/SKILL.md)
+**Quando usar:** Para gerenciar issues, priorizar backlog, mover cards entre colunas ou gerar resumos de sprint.
+
+Transforma qualquer IA CLI em **Scrum Master do LootPrice**. Gerencia GitHub Issues como cards do projeto usando prefixos de coluna no título (`[Backlog]`, `[Developing]`, `[Code Review]`, `[Done]`, etc.).
+
+```
+@scrum criar issue para implementar crawler Fanatical
+@scrum mover issue #5 para Developing
+@scrum resumo da sprint atual
+```
+
 ---
 
 ## Template de Pull Request
 
-O template de PR está em **`.github/PULL_REQUEST_TEMPLATE.md`** — essa localização é obrigatória para o GitHub preencher o template automaticamente ao abrir PRs pela UI ou pela API.
+O template de PR está em **`.github/PULL_REQUEST_TEMPLATE.md`** — localização obrigatória para o GitHub preencher automaticamente.
 
-Quando uma IA abre um PR via MCP GitHub, ela deve usar o conteúdo deste template como base para o corpo do PR.
+Quando uma IA abre um PR via MCP GitHub, deve usar o conteúdo deste template como base e incluir `Closes #XX` para vincular a issue.
 
 ---
 
@@ -48,18 +57,20 @@ ai/
 │   └── SKILL.md                      ← Skill: backend sênior LootPrice
 ├── frontend-developer/
 │   └── SKILL.md                      ← Skill: frontend sênior LootPrice
-└── reviewer/
-    ├── SKILL.md                      ← Skill: revisor de código LootPrice
-    └── resources/
-        ├── checklist.md              ← Referência: checklist de conformidade (B-01..G-05)
-        └── review_format.md          ← Referência: formato exato do review em markdown
+├── reviewer/
+│   ├── SKILL.md                      ← Skill: revisor de código LootPrice
+│   └── resources/
+│       ├── checklist.md              ← Checklist de conformidade (B-01..G-05)
+│       └── review_format.md          ← Formato exato do review
+└── scrum-master/
+    └── SKILL.md                      ← Skill: scrum master LootPrice
 ```
 
 ---
 
 ## Contexto do Projeto
 
-Para entender o estado atual do projeto (cards, decisões, última sessão):
-- **[`docs/project_state.md`](../docs/project_state.md)** — estado vivo (cards, decisões, débitos técnicos)
-- **[`docs/architecture.md`](../docs/architecture.md)** — arquitetura, stack, contratos de API
+Para entender o estado atual do projeto:
+- **[`AGENTS.md`](../AGENTS.md)** — contexto unificado (arquitetura, estado, regras, decisões)
 - **[`docs/database_schema.md`](../docs/database_schema.md)** — schema completo do banco
+- **[`docs/issues_mvp.md`](../docs/issues_mvp.md)** — issues detalhadas para o MVP
