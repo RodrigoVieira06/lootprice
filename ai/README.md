@@ -7,14 +7,17 @@
 
 ## Skills disponíveis
 
-### 🧑‍💻 [`developer/SKILL.md`](./developer/SKILL.md)
-**Quando usar:** Ao iniciar qualquer sessão de desenvolvimento no LootPrice.
+### 🧑‍💻 [`backend-developer/SKILL.md`](./backend-developer/SKILL.md)
+**Quando usar:** Tarefas de backend, API, banco, crawlers, autenticação, CI backend ou infra backend.
 
-Transforma qualquer IA CLI em um **desenvolvedor sênior especialista do LootPrice** — conhece a stack, respeita as regras rígidas do projeto, segue o workflow de 9 passos e usa os MCPs disponíveis corretamente.
+Transforma qualquer IA CLI em um **desenvolvedor backend sênior do LootPrice** — conhece FastAPI, SQLModel, Alembic, PostgreSQL, crawlers, testes Python e regras de segurança do backend.
 
-```
-Toda IA que trabalhar no LootPrice DEVE carregar esta skill primeiro.
-```
+### 🎨 [`frontend-developer/SKILL.md`](./frontend-developer/SKILL.md)
+**Quando usar:** Tarefas de React, TypeScript/TSX, Vite, SCSS, Biome, Jest, pnpm, UX, acessibilidade ou integração com a API.
+
+Transforma qualquer IA CLI em um **desenvolvedor frontend sênior do LootPrice** — conhece a stack planejada, respeita contratos da API e não assume estrutura React antes de existir.
+
+Se a skill `caveman` estiver ativa junto com backend ou frontend, use as regras técnicas da skill LootPrice e o formato curto do Caveman.
 
 ### 🔍 [`reviewer/SKILL.md`](./reviewer/SKILL.md)
 **Quando usar:** Para revisar um Pull Request aberto.
@@ -41,11 +44,10 @@ Quando uma IA abre um PR via MCP GitHub, ela deve usar o conteúdo deste templat
 ```
 ai/
 ├── README.md                         ← Este arquivo
-├── developer/
-│   ├── SKILL.md                      ← Skill: desenvolvedor sênior LootPrice
-│   └── resources/
-│       ├── stack.md                  ← Referência: stack completa + variáveis de ambiente
-│       └── workflow.md               ← Referência: workflow de 9 passos + padrões de branch/commit
+├── backend-developer/
+│   └── SKILL.md                      ← Skill: backend sênior LootPrice
+├── frontend-developer/
+│   └── SKILL.md                      ← Skill: frontend sênior LootPrice
 └── reviewer/
     ├── SKILL.md                      ← Skill: revisor de código LootPrice
     └── resources/

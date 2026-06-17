@@ -27,7 +27,7 @@ Antes de começar, confirme que você tem:
 
 - [ ] **MCP GitHub** configurado com acesso ao repositório `RodrigoVieira06/lootprice`
 - [ ] **Número ou URL do PR** a ser revisado (obrigatório — esta skill não infere o PR automaticamente)
-- [ ] Skill base carregada: `ai/developer/SKILL.md` — necessidade de conhecer as regras do projeto antes de revisar
+- [ ] Skill base carregada conforme o escopo do PR: `ai/backend-developer/SKILL.md`, `ai/frontend-developer/SKILL.md`, ou ambas
 
 ---
 
@@ -49,7 +49,9 @@ pergunte ao usuário antes de prosseguir — **nunca assuma o PR**.
 
 Leia **nesta ordem** e guarde as informações para uso na análise:
 
-1. `ai/developer/SKILL.md` — regras rígidas, o que nunca fazer, stack e padrões do projeto
+1. Skills de desenvolvimento relevantes ao diff:
+   - `ai/backend-developer/SKILL.md` para backend, banco, crawlers, CI backend ou infra backend
+   - `ai/frontend-developer/SKILL.md` para React, TypeScript, UX ou integração frontend
 2. `docs/project_state.md` — estado atual, decisões recentes, débitos técnicos
 3. `docs/architecture.md` — contexto arquitetural, contratos de API, padrões de código
 4. `ai/reviewer/resources/checklist.md` — checklist de conformidade consolidado
@@ -119,7 +121,7 @@ Após postar, informe ao usuário:
 ## 4. Regras de Comportamento
 
 - **Nunca** assuma qual é o PR — sempre exija o número ou URL explicitamente
-- **Sempre** leia `ai/developer/SKILL.md` antes de analisar — as regras do projeto estão lá
+- **Sempre** leia a skill de desenvolvimento correspondente ao escopo do PR antes de analisar
 - **Nunca** poste um review vazio ou genérico — seja técnico e específico
 - **Sempre** mencione o arquivo e linha específicos ao apontar um problema
 - **Nunca** aprove um PR com bloqueios identificados — o veredicto deve ser REPROVADO
@@ -135,7 +137,8 @@ Após postar, informe ao usuário:
 
 - Formato do review: `ai/reviewer/resources/review_format.md`
 - Checklist de conformidade: `ai/reviewer/resources/checklist.md`
-- Regras do projeto: `ai/developer/SKILL.md` (Seção 3 — Regras Rígidas)
+- Regras backend: `ai/backend-developer/SKILL.md`
+- Regras frontend: `ai/frontend-developer/SKILL.md`
 - Arquitetura: `docs/architecture.md`
 - Estado do projeto: `docs/project_state.md`
 - PR Template: `.github/PULL_REQUEST_TEMPLATE.md`

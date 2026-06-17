@@ -31,6 +31,10 @@
 | F-01 | TypeScript estrito — sem `any` explícito | Buscar `: any` ou `as any` no diff |
 | F-02 | Componentes novos têm tipos corretos nas props | Props de componentes devem ter interface ou type declarado |
 | F-03 | Nenhum dado sensível no `localStorage` sem criptografia | Buscar `localStorage.setItem` e verificar o que está sendo armazenado |
+| F-04 | Estilos usam SCSS, sem TailwindCSS | Buscar `tailwind`, classes utilitárias extensas ou dependências Tailwind |
+| F-05 | Biome é usado para lint/format/imports | Checar `biome.json` e scripts de `package.json` |
+| F-06 | Testes frontend usam Jest | Checar scripts e arquivos `*.test.ts`/`*.test.tsx` |
+| F-07 | Gerenciador frontend é pnpm | Checar `pnpm-lock.yaml` e evitar `package-lock.json`/`yarn.lock` |
 
 ---
 
@@ -55,7 +59,7 @@
 | G-02 | Branch segue o padrão do projeto | Formato: `feat/card-XX-descricao`, `fix/card-XX-descricao`, etc. |
 | G-03 | `docs/project_state.md` atualizado se houve decisão técnica | Se o PR muda arquitetura, stack ou processo — o arquivo deve refletir |
 | G-04 | Sem código comentado (dead code) | Blocos comentados que não são documentação devem ser removidos |
-| G-05 | CI passou (lint + testes) | Verificar via `get_pull_request_status` — checar checks `CI / Backend (Python)` |
+| G-05 | CI passou (lint + testes) | Verificar via `get_pull_request_status` — checar `CI — Lint & Tests / Backend (Python)`; frontend só é obrigatório após o job ser reativado |
 
 ---
 

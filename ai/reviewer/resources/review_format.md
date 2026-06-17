@@ -83,6 +83,13 @@
 | B-07 | `logging` usado (sem `print()` em produção) | ✅ / ❌ / N/A |
 | B-08 | Validação Pydantic nas entradas de crawler | ✅ / ❌ / N/A |
 | B-12 | Testes para funcionalidade nova | ✅ / ❌ / N/A |
+| F-01 | TypeScript estrito — sem `any` explícito | ✅ / ❌ / N/A |
+| F-02 | Componentes novos têm props tipadas | ✅ / ❌ / N/A |
+| F-03 | Sem dados sensíveis inseguros no `localStorage` | ✅ / ❌ / N/A |
+| F-04 | Estilos usam SCSS, sem TailwindCSS | ✅ / ❌ / N/A |
+| F-05 | Biome usado para lint/format/imports | ✅ / ❌ / N/A |
+| F-06 | Testes frontend usam Jest | ✅ / ❌ / N/A |
+| F-07 | Gerenciador frontend é pnpm | ✅ / ❌ / N/A |
 | G-01 | Conventional Commits no título do PR | ✅ / ❌ |
 | G-02 | Padrão de nome de branch correto | ✅ / ❌ |
 | G-03 | `docs/project_state.md` atualizado | ✅ / ❌ / N/A |

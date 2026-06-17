@@ -2,7 +2,7 @@
 
 > **Para qualquer LLM que ler este arquivo:** Este é o documento de estado vivo do projeto.
 > Contém apenas dados — o que foi feito, o que está em progresso e decisões tomadas.
-> As **instruções de como se comportar** estão em `ai/developer/SKILL.md`.
+> As **instruções de como se comportar** estão nas skills de escopo em `ai/backend-developer/SKILL.md` e `ai/frontend-developer/SKILL.md`.
 > Atualize este arquivo ao encerrar qualquer sessão onde arquivos foram criados, cards movidos ou decisões tomadas.
 
 ---
@@ -12,8 +12,8 @@
 | Campo | Valor |
 |---|---|
 | **Versão** | 0.2.0 |
-| **Última atualização** | 2026-06-10 |
-| **Atualizado por** | Claude Sonnet 4.6 (Thinking) via Antigravity IDE |
+| **Última atualização** | 2026-06-12 |
+| **Atualizado por** | Codex GPT-5 via CLI |
 | **Fase atual** | Desenvolvimento — CARD-01 em andamento |
 | **Próximos cards** | CARD-02 (CI), CARD-03 (PostgreSQL + Alembic), CARD-05 (model users) |
 
@@ -72,11 +72,8 @@ lootprice/
 │
 ├── ai/
 │   ├── README.md                     ✅ Mapa das ferramentas de IA
-│   ├── developer/
-│   │   ├── SKILL.md                  ✅ Skill: desenvolvedor sênior LootPrice
-│   │   └── resources/
-│   │       ├── stack.md              ✅ Referência da stack completa
-│   │       └── workflow.md           ✅ Workflow de 9 passos + padrões
+│   ├── backend-developer/SKILL.md    ✅ Skill: backend sênior LootPrice
+│   ├── frontend-developer/SKILL.md   ✅ Skill: frontend sênior LootPrice
 │   └── reviewer/
 │       ├── SKILL.md                  ✅ Skill: revisor de código
 │       └── resources/
@@ -87,7 +84,7 @@ lootprice/
 │   ├── architecture.md               ✅ Arquitetura completa
 │   ├── database_schema.md            ✅ Schema com todas as tabelas
 │   ├── project_state.md              ✅ Este arquivo
-│   └── project_cards.md              ✅ 23 cards com critérios de aceitação
+│   └── project_cards.md              ⏳ Planejado; cards ativos estão no Jira
 │
 ├── backend/
 │   ├── app/
@@ -98,6 +95,8 @@ lootprice/
 │   ├── requirements.txt              ✅
 │   └── ruff.toml                     ✅
 │
+├── frontend/.gitkeep                  ⏳ Placeholder; SPA ainda não implementada
+├── AGENTS.md                         ✅ Guia de contribuição para humanos e agentes
 ├── docker-compose.yml                ✅ PostgreSQL 15 em 127.0.0.1
 ├── Makefile                          ✅
 ├── lefthook.yml                      ✅
@@ -126,6 +125,10 @@ lootprice/
 | 2026-06-10 | AI Review via Skill em vez de GitHub Actions | `ai-review.yml` com erros persistentes. Skill via MCP GitHub tem contexto superior e zero infraestrutura de Actions | Manter `ai-review.yml` |
 | 2026-06-10 | `llm_context.md` decomposto em `ai/developer/SKILL.md` + `docs/project_state.md` | Arquivo único de 650+ linhas misturava instruções e estado, causando falhas de contexto | Manter arquivo monolítico |
 | 2026-06-10 | PostHog para Métricas e Analytics | Centraliza Product Analytics, Session Replay e Feature Flags com esforço mínimo e plano gratuito amplo | Umami + Sentry + Admin Dashboard próprio |
+| 2026-06-12 | Fonte de verdade operacional definida para IAs | Evitar que skills executem comandos/pastas ainda planejados na arquitetura | Tratar arquitetura como estado implementado |
+| 2026-06-12 | Skill genérica de developer separada por escopo | Reduzir ambiguidade entre backend implementado e frontend planejado | Manter `ai/developer/SKILL.md` única |
+| 2026-06-12 | Stack frontend atualizada para SCSS + Biome + Jest + pnpm | Evitar TailwindCSS e padronizar tooling antes da criação da base frontend | TailwindCSS, ESLint e npm como padrões frontend |
+| 2026-06-12 | Schema separa `games`, `store_products` e `prices` | Evitar acoplamento entre jogo canônico e produto específico de loja; preparar Steam app_id, URLs da Nuuvem e lojas futuras | `prices` referenciar diretamente `(game_id, store_id)` |
 
 
 ---
@@ -143,18 +146,20 @@ lootprice/
 
 ## Última Sessão
 
-**Data:** 2026-06-10
-**LLM:** Claude Sonnet 4.6 (Thinking) via Antigravity IDE
+**Data:** 2026-06-12
+**LLM:** Codex GPT-5 via CLI
 
 **O que foi feito:**
-- Removido `ai-review.yml` e scripts Python de review automático
-- Limpado `ci.yml`
-- Reformatado `PULL_REQUEST_TEMPLATE.md` como ferramenta para IAs que abrem PRs
-- Criada skill `ai/reviewer/SKILL.md` com recursos (checklist + formato)
-- Criada skill `ai/developer/SKILL.md` com recursos (stack + workflow)
-- Criado `ai/README.md` com mapa de todas as ferramentas de IA
-- Decomposto `docs/llm_context.md` em `ai/developer/SKILL.md` + `docs/project_state.md`
-- Atualizados `docs/architecture.md` e este arquivo
+- Criado `AGENTS.md` com guia de contribuição específico do repositório
+- Documentados estrutura atual, comandos reais do Makefile, padrões de código, testes, commits, PRs e instruções para agentes
+- Alinhadas skills em `ai/` com `docs/architecture.md` e com o estado real do repositório
+- Separados comandos ativos de comandos planejados nas skills backend/frontend e na documentação
+- Ajustadas regras de CI/review para refletir backend ativo e frontend ainda desabilitado
+- Removida a skill genérica `ai/developer`
+- Criadas `ai/backend-developer/SKILL.md` e `ai/frontend-developer/SKILL.md`
+- Atualizadas referências para combinar backend/frontend com a skill `caveman` quando habilitada
+- Atualizada stack frontend planejada: React mais recente, TypeScript/TSX, Vite, SCSS, Axios, Zod, React Hook Form, Zustand, Biome, Jest e pnpm
+- Refeito `docs/database_schema.md` para o MVP com visão de evolução por fases
 
 **O que fazer na próxima sessão:**
 - Executar CARD-01 se pendente (Docker no host Ubuntu)

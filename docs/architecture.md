@@ -2,7 +2,7 @@
 
 > **Versão:** 0.2.0-MVP
 > **Status:** Planejamento Consolidado — Pronto para Execução
-> **Última atualização:** 2026-06-03
+> **Última atualização:** 2026-06-12
 > **Audiência:** Desenvolvedor, LLMs de apoio (GitHub Copilot, Claude, Cursor, etc.)
 
 ---
@@ -178,18 +178,21 @@ Mesmo no MVP, adicione `slowapi` (rate limiting para FastAPI) antes do primeiro 
 
 | Camada | Tecnologia |
 |---|---|
-| Framework | React 18+ (TypeScript) |
+| Framework | React mais recente (TypeScript/TSX) |
 | Build | Vite.js |
-| Estilo | TailwindCSS |
+| Estilo | SCSS |
 | HTTP Client | Axios |
 | Validação de Formulários | React Hook Form + Zod |
 | State Management | Zustand (leve, adequado para MVP) |
+| Lint/Format | Biome |
+| Testes | Jest |
+| Pacotes | pnpm |
 
 ### Tooling & DevOps
 
 | Ferramenta | Finalidade |
 |---|---|
-| Makefile | Atalhos: `make dev`, `make test`, `make crawl`, `make migrate` |
+| Makefile | Atalhos ativos: `make install`, `make dev`, `make test`, `make lint`, `make format`; comandos de crawler/migration entram nos cards correspondentes |
 | Lefthook | Git hooks: lint + commit message no pre-commit |
 | GitHub Actions | CI: lint, testes, build a cada push/PR |
 | Jira | Gestão de backlog e sprints (23 cards, 8 épicos) — integrado via MCP |
@@ -197,6 +200,8 @@ Mesmo no MVP, adicione `slowapi` (rate limiting para FastAPI) antes do primeiro 
 ---
 
 ## 6. Estrutura do Repositório
+
+> Esta é a estrutura-alvo do MVP. Para o estado real antes de executar qualquer tarefa, consulte `docs/project_state.md` e a árvore atual do repositório.
 
 ```
 lootprice/                          # Raiz do Monorepo
@@ -344,12 +349,18 @@ htmlcov/
 ```
 users
   id (PK)
-  email (UNIQUE)
-  hashed_password (nullable — login social não tem senha)
+  email (CITEXT UNIQUE)
+  hashed_password (nullable — login social pode não ter senha)
   role: enum('user', 'admin')
-  auth_provider: enum('local', 'google', 'discord')
-  provider_user_id (nullable)
+  is_active
   created_at, updated_at
+
+oauth_accounts
+  id (PK)
+  user_id (FK → users.id)
+  provider: enum('google', 'discord')
+  provider_user_id
+  provider_email
 
 stores
   id (PK)
@@ -357,28 +368,44 @@ stores
   slug              -- "steam", "nuuvem"
   base_url
   is_active: bool
-  crawler_class     -- "steam.SteamCrawler"
+  crawler_key       -- "steam", "nuuvem"
 
 games
   id (PK)
-  title             -- Nome original (ex: "Cyberpunk 2077™")
+  title             -- Nome canônico exibível
   canonical_name    -- Nome normalizado (ex: "cyberpunk 2077")
   slug              -- "cyberpunk-2077"
   cover_url (nullable)
+  platform          -- "pc" no MVP
   created_at, updated_at
 
-prices
+store_products
   id (PK)
   game_id (FK → games.id)
   store_id (FK → stores.id)
+  external_id       -- Steam app_id, slug da loja, etc.
+  store_title       -- Nome bruto na loja
+  store_url
+  is_available
+  first_seen_at, last_seen_at
+
+prices
+  id (PK)
+  store_product_id (FK → store_products.id, UNIQUE)
   price_brl         -- NUMERIC(10,2)
   original_price_brl (nullable)  -- Para calcular % de desconto
   discount_percent (nullable)
+  currency          -- "BRL" no MVP
   affiliate_url     -- Link direto para compra (afiliado futuro)
   is_available: bool
   scraped_at        -- Timestamp da última coleta
 
-UNIQUE(game_id, store_id)  -- Um registro de preço por jogo por loja
+crawler_runs
+  id (PK)
+  store_id (FK → stores.id)
+  status
+  started_at, finished_at
+  items_found, items_updated
 
 revoked_tokens                 -- Blacklist de refresh tokens (MVP — CARD-22)
   id (PK)
@@ -390,6 +417,7 @@ revoked_tokens                 -- Blacklist de refresh tokens (MVP — CARD-22)
 ### Decisões de Design
 
 - `canonical_name` é editável pelo admin para corrigir falsos negativos da normalização automática
+- `store_products` separa o jogo canônico do produto específico de cada loja
 - `prices` guarda apenas o **preço atual** no MVP. Histórico será uma tabela `price_history` na Fase 3
 - `price_brl` em NUMERIC, nunca FLOAT — dinheiro não tolera imprecisão de ponto flutuante
 - `scraped_at` permite exibir "Atualizado há X minutos" no frontend sem expor problemas de crawler
@@ -429,7 +457,7 @@ NuuvemCrawler        SteamCrawler
                │
                ▼
     ┌──────────────────────┐
-    │  Upsert no PostgreSQL│  ← INSERT OR UPDATE em games e prices
+    │  Upsert no PostgreSQL│  ← games, store_products, prices e crawler_runs
     └──────────────────────┘
 ```
 
@@ -442,7 +470,7 @@ NuuvemCrawler        SteamCrawler
     ▼
 [FastAPI]
     │
-    │  SELECT games JOIN prices JOIN stores
+    │  SELECT games JOIN store_products JOIN prices JOIN stores
     │  WHERE canonical_name LIKE '%cyberpunk%'
     │  ORDER BY prices.price_brl ASC
     ▼
@@ -484,7 +512,7 @@ NuuvemCrawler        SteamCrawler
 
 ```json
 {
-  "id": 1,
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "title": "Cyberpunk 2077™",
   "canonical_name": "cyberpunk 2077",
   "slug": "cyberpunk-2077",
@@ -565,6 +593,9 @@ Callback → recebe code → troca por user_info
 Upsert user (cria se não existe, atualiza se existe)
     │
     ▼
+Upsert oauth_accounts (provider + provider_user_id)
+    │
+    ▼
 Retorna JWT (mesmo formato do login local)
 ```
 
@@ -611,6 +642,8 @@ from typing import AsyncGenerator
 
 class RawGameData(BaseModel):
     title: str
+    external_id: str | None = None          # Steam app_id, slug da loja, etc.
+    store_url: str
     price_brl: Decimal                    # Nunca float
     original_price_brl: Decimal | None = None
     affiliate_url: str
@@ -657,7 +690,7 @@ Esta seção descreve como as ferramentas de IA são integradas ao workflow de d
 │   └── Claude MCP: autocompletar, refatorar, documentar       │
 │                                                              │
 │  Terminal                                                    │
-│   └── make dev | make test | make crawl | make migrate       │
+│   └── make dev | make test | make lint | make format         │
 └──────────────────────────────────────────────────────────────┘
               │  git push / open PR
               ▼
@@ -673,14 +706,14 @@ Esta seção descreve como as ferramentas de IA são integradas ao workflow de d
 │  GitHub Actions (CI)                                         │
 │   ├── Lint (Ruff)                                            │
 │   ├── Testes (Pytest)                                        │
-│   └── Build check (Frontend)                                 │
+│   └── Build/test check (Frontend — futuro, job desabilitado hoje) │
 └──────────────────────────────────────────────────────────────┘
               │  integração bidirecional
               ▼
 ┌──────────────────────────────────────────────────────────────┐
 │                    GESTÃO DE TAREFAS                         │
 │                                                              │
-│  MCP Jira (ou GitHub Projects via MCP)                      │
+│  MCP Jira                                                   │
 │   ├── Criar cards de tarefa via prompt de chat               │
 │   ├── Mover cards entre colunas (Backlog → In Progress)      │
 │   ├── Vincular PR a card automaticamente                     │
@@ -725,12 +758,12 @@ Prompt: "Cria um card no projeto LootPrice:
          título 'Implementar crawler Nuuvem', 
          tipo Task, prioridade High, sprint atual"
 
-Prompt: "Move o card LP-42 para 'In Review'"
+Prompt: "Move o card LP-42 para 'Revisando'"
 
 Prompt: "Gera o resumo da sprint atual com todos os cards concluídos"
 ```
 
-> **Alternativa ao Jira:** GitHub Projects funciona via MCP GitHub e pode ser suficiente para o MVP sem custo adicional. Recomendado começar com GitHub Projects e migrar para Jira apenas se o backlog crescer muito.
+> **Fonte de verdade atual:** Jira (`LP`). GitHub Projects não é usado no fluxo ativo, salvo nova decisão registrada em `docs/project_state.md`.
 
 ### MCP: DevTools (Browser)
 
@@ -780,7 +813,7 @@ Prompt: "Tira screenshot do estado atual e analisa o contraste de cores"
 # .github/workflows/ci.yml
 
 on: [pull_request, push]
-branches: [main]
+branches: [master]
 
 jobs:
   backend:
@@ -794,14 +827,8 @@ jobs:
       - ruff format --check .
       - pytest tests/ -v
 
-  frontend:
-    steps:
-      - Checkout
-      - Setup Node 20
-      - npm ci
-      - tsc --noEmit
-      - eslint src/
-      - npm run build
+  # frontend:
+  #   Desabilitado temporariamente; reativar quando frontend/package.json existir.
 ```
 
 ### Fluxo de AI Review via Skill
@@ -818,7 +845,7 @@ Desenvolvedor ou IA invoca a skill:
 "@reviewer revisar PR #<N>"
      │
      ▼
-Skill lê ai/developer/SKILL.md        ← regras rígidas do projeto
+Skill lê skill backend/frontend       ← regras rígidas do escopo do PR
        + docs/architecture.md      ← contexto arquitetural
        + ai/reviewer/resources/    ← checklist + formato
      │
@@ -872,7 +899,8 @@ refactor/<card-id>-descricao  test/<card-id>-descricao
 ### Branch Protection Rules (GitHub UI — `master`)
 
 - ✅ Require pull request before merging
-- ✅ Require status checks: `ci / Backend (Python)`, `ci / Frontend (React/TypeScript)`
+- ✅ Require status checks atuais: `CI — Lint & Tests / Backend (Python)`
+- ⏳ Frontend status check: habilitar quando o job frontend for reativado
 - ✅ Dismiss stale reviews on new commits
 - ✅ Block direct pushes (configurado nas regras de Branch Protection do GitHub)
 
@@ -884,19 +912,24 @@ refactor/<card-id>-descricao  test/<card-id>-descricao
 ```yaml
 # lefthook.yml
 pre-commit:
+  parallel: true
   commands:
-    lint-backend:
-      glob: "backend/**/*.py"
-      run: ruff check {staged_files} && ruff format --check {staged_files}
-    lint-frontend:
-      glob: "frontend/src/**/*.{ts,tsx}"
-      run: cd frontend && npx eslint {staged_files}
+    ruff-check:
+      root: "backend/"
+      glob: "*.py"
+      run: ruff check {staged_files}
+    ruff-format:
+      root: "backend/"
+      glob: "*.py"
+      run: ruff format {staged_files}
 
 commit-msg:
   commands:
-    conventional:
-      run: npx commitlint --edit {1}
+    conventional-commit:
+      run: shell regex para Conventional Commits
 ```
+
+Frontend hooks com `pnpm biome check` devem ser adicionados quando a base `frontend/package.json` existir.
 
 ### Conventional Commits — Padrão do Projeto
 
@@ -917,7 +950,7 @@ refactor(normalizer): extrai lógica de slug para utilitário separado
 
 - [ ] Setup do repositório, Docker, Makefile, Lefthook (CARD-01 / LP-12) ← **em andamento**
 - [ ] Pipeline CI com GitHub Actions (CARD-02 / LP-14)
-- [ ] Models: stores, games, prices, users, revoked_tokens + migrations Alembic (CARD-03, 04, 05)
+- [ ] Models: users, oauth_accounts, revoked_tokens, stores, games, store_products, prices, crawler_runs + migrations Alembic (CARD-03, 04, 05)
 - [ ] Crawler: Steam API (CARD-13 / LP-18)
 - [ ] Crawler: Nuuvem scraper (CARD-14 / LP-20)
 - [ ] Normalização de nomes e geração de slugs (CARD-12 / LP-19)
@@ -931,7 +964,7 @@ refactor(normalizer): extrai lógica de slug para utilitário separado
 
 ### Fase 1.5 — Frontend (MVP — parte do escopo original)
 
-- [ ] Setup React SPA: Vite + TypeScript + TailwindCSS + Zustand (CARD-18 / LP-29)
+- [ ] Setup React SPA: Vite + TypeScript/TSX + SCSS + Zustand + Biome + Jest + pnpm (CARD-18 / LP-29)
 - [ ] Página de busca e listagem de jogos (CARD-19 / LP-26)
 - [ ] Páginas de login e registro (CARD-20 / LP-24)
 - [ ] Página de detalhe do jogo com comparação de preços (CARD-21 / LP-25)
@@ -986,7 +1019,7 @@ refactor(normalizer): extrai lógica de slug para utilitário separado
 ---
 
 > **Instrução para LLMs:** Este documento é a fonte de verdade de arquitetura do projeto LootPrice.
-> Ao receber tarefas de desenvolvimento, carregue primeiro `ai/developer/SKILL.md` para entender regras e workflow,
+> Ao receber tarefas de desenvolvimento, carregue primeiro `ai/backend-developer/SKILL.md` ou `ai/frontend-developer/SKILL.md` conforme o escopo,
 > e `docs/project_state.md` para o estado atual do projeto.
 > Consulte este arquivo para entender convenções de nomenclatura, estrutura de pastas, contratos de API e decisões arquiteturais.
 > Em caso de conflito entre este documento e o código, sinalize a inconsistência antes de agir.

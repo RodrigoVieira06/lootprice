@@ -40,7 +40,7 @@ Documentação completa: [`docs/architecture.md`](docs/architecture.md)
 - Python 3.11+
 - Docker & Docker Compose
 - Node.js 20+
-- Lefthook instalado globalmente (`npm install -g lefthook`)
+- Lefthook instalado globalmente
 
 > **Acesso remoto:** O ambiente de desenvolvimento recomendado é uma máquina Ubuntu acessada via SSH. Use **[Tailscale](https://tailscale.com)** para acesso SSH seguro de qualquer lugar e **[Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)** para expor a aplicação durante testes sem precisar de VPS.
 
@@ -60,13 +60,7 @@ cp backend/.env.example backend/.env
 # 3. Instale dependências e configure git hooks
 make install
 
-# 4. Suba o banco de dados
-make db-up
-
-# 5. Execute as migrations
-make migrate
-
-# 6. Inicie o servidor de desenvolvimento
+# 4. Inicie o servidor de desenvolvimento
 make dev
 ```
 
@@ -81,16 +75,11 @@ Documentação Swagger em `http://localhost:8000/docs`
 |---|---|
 | `make install` | Instala dependências e configura Lefthook |
 | `make dev` | Sobe o banco e inicia o servidor FastAPI |
-| `make db-up` | Sobe apenas o PostgreSQL via Docker |
-| `make db-down` | Para o PostgreSQL |
-| `make db-seed` | Popula tabela `stores` com dados iniciais |
-| `make migrate` | Aplica migrations pendentes (Alembic) |
-| `make migrate-create msg="..."` | Cria nova migration |
-| `make migrate-rollback` | Reverte a última migration |
-| `make lint` | Executa Ruff (check + format) |
+| `make lint` | Executa Ruff check |
 | `make format` | Formata o código com Ruff |
 | `make test` | Executa todos os testes com Pytest |
-| `make crawl` | Executa todos os crawlers manualmente |
+
+Comandos de banco/migrations/crawlers (`make db-up`, `make migrate`, `make crawl`) estão planejados para os próximos cards e só devem ser usados após entrarem no `Makefile`.
 
 ---
 
@@ -100,20 +89,21 @@ Documentação Swagger em `http://localhost:8000/docs`
 lootprice/
 ├── ai/
 │   ├── README.md             # Índice das ferramentas de IA
-│   ├── developer/SKILL.md    # Skill: dev sênior LootPrice
+│   ├── backend-developer/    # Skill: backend sênior LootPrice
+│   ├── frontend-developer/   # Skill: frontend sênior LootPrice
 │   └── reviewer/SKILL.md     # Skill: revisor de código
 ├── docs/
 │   ├── architecture.md       # Visão arquitetural completa
 │   ├── database_schema.md    # Schema do banco de dados
 │   ├── project_state.md      # Estado vivo do projeto (cards, decisões, última sessão)
-│   └── project_cards.md      # Cards do Jira (MVP)
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/           # Endpoints REST
 │   │   ├── core/             # Config, DB, segurança, dependências
 │   │   ├── models/           # Tabelas SQLModel
 │   │   ├── schemas/          # DTOs Pydantic
-│   └─── crawlers/         # Scrapers por loja
+│   └── crawlers/            # Scrapers por loja
+├── frontend/.gitkeep         # Placeholder; SPA ainda não implementada
 ├── .github/
 │   ├── workflows/ci.yml      # CI: lint + testes
 │   └── PULL_REQUEST_TEMPLATE.md
@@ -128,7 +118,7 @@ lootprice/
 
 **Backend:** Python 3.11, FastAPI, SQLModel, Alembic, PostgreSQL 15, HTTPX, BeautifulSoup4, Pydantic v2, python-jose, passlib, slowapi, Ruff, Pytest
 
-**Frontend (MVP):** React 18, TypeScript, Vite, TailwindCSS, Axios, Zod, React Hook Form, Zustand
+**Frontend (MVP):** React mais recente, TypeScript/TSX, Vite, SCSS, Axios, Zod, React Hook Form, Zustand, Biome, Jest, pnpm
 
 **Infra:** Docker + Docker Compose, Nginx, Tailscale (acesso SSH), Cloudflare Tunnel (exposição pública)
 
@@ -160,7 +150,8 @@ Este projeto usa MCP (Model Context Protocol) extensivamente:
 - **DevTools MCP** — inspecionar frontend em tempo real
 
 As ferramentas de IA do projeto estão organizadas em [`ai/`](ai/README.md):
-- **[`ai/developer/SKILL.md`](ai/developer/SKILL.md)** — skill que transforma qualquer IA CLI em desenvolvedor sênior do LootPrice
+- **[`ai/backend-developer/SKILL.md`](ai/backend-developer/SKILL.md)** — skill para backend, banco, crawlers, autenticação e CI backend
+- **[`ai/frontend-developer/SKILL.md`](ai/frontend-developer/SKILL.md)** — skill para React, TSX, SCSS, Biome, Jest, pnpm, UX e integração frontend
 - **[`ai/reviewer/SKILL.md`](ai/reviewer/SKILL.md)** — skill de review: analisa PRs via MCP GitHub e posta review estruturado
 
 O estado atual do projeto (cards, decisões, última sessão) está em [`docs/project_state.md`](docs/project_state.md).
