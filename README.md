@@ -30,7 +30,7 @@ O LootPrice realiza scraping e consome APIs de múltiplas lojas, normaliza os da
           [ React SPA (MVP) ]
 ```
 
-Documentação completa: [`docs/architecture.md`](docs/architecture.md)
+Documentação completa para IA: [`AGENTS.md`](AGENTS.md)
 
 ---
 
@@ -79,8 +79,6 @@ Documentação Swagger em `http://localhost:8000/docs`
 | `make format` | Formata o código com Ruff |
 | `make test` | Executa todos os testes com Pytest |
 
-Comandos de banco/migrations/crawlers (`make db-up`, `make migrate`, `make crawl`) estão planejados para os próximos cards e só devem ser usados após entrarem no `Makefile`.
-
 ---
 
 ## Estrutura do Repositório
@@ -91,22 +89,24 @@ lootprice/
 │   ├── README.md             # Índice das ferramentas de IA
 │   ├── backend-developer/    # Skill: backend sênior LootPrice
 │   ├── frontend-developer/   # Skill: frontend sênior LootPrice
-│   └── reviewer/SKILL.md     # Skill: revisor de código
+│   ├── reviewer/             # Skill: revisor de código
+│   └── scrum-master/         # Skill: scrum master
 ├── docs/
-│   ├── architecture.md       # Visão arquitetural completa
 │   ├── database_schema.md    # Schema do banco de dados
-│   ├── project_state.md      # Estado vivo do projeto (cards, decisões, última sessão)
+│   └── issues_mvp.md         # Issues detalhadas para o MVP
 ├── backend/
 │   ├── app/
 │   │   ├── api/v1/           # Endpoints REST
 │   │   ├── core/             # Config, DB, segurança, dependências
 │   │   ├── models/           # Tabelas SQLModel
 │   │   ├── schemas/          # DTOs Pydantic
-│   └── crawlers/            # Scrapers por loja
+│   │   └── crawlers/         # Scrapers por loja
+│   └── tests/
 ├── frontend/.gitkeep         # Placeholder; SPA ainda não implementada
 ├── .github/
 │   ├── workflows/ci.yml      # CI: lint + testes
 │   └── PULL_REQUEST_TEMPLATE.md
+├── AGENTS.md                 # Contexto unificado para IA
 ├── docker-compose.yml
 ├── Makefile
 └── lefthook.yml
@@ -141,20 +141,31 @@ docs(schema): atualizar modelagem da tabela prices
 
 ---
 
+## Gestão do Projeto
+
+O LootPrice usa **GitHub Issues** como sistema de gestão de tarefas:
+
+- Issues são criadas com prefixo de coluna no título: `[Backlog]`, `[Developing]`, `[Code Review]`, `[Done]`, etc.
+- Labels de tipo (`type:feat`, `type:fix`, `type:chore`) e prioridade (`priority:high`, `priority:medium`, `priority:low`)
+- Milestones para fases do projeto
+- Issues detalhadas em [`docs/issues_mvp.md`](docs/issues_mvp.md)
+
+---
+
 ## Desenvolvimento com IA
 
 Este projeto usa MCP (Model Context Protocol) extensivamente:
 
 - **GitHub MCP** — criar issues, abrir PRs, comentar, verificar CI
-- **Jira MCP** — gerenciar cards e sprints via chat
 - **DevTools MCP** — inspecionar frontend em tempo real
 
 As ferramentas de IA do projeto estão organizadas em [`ai/`](ai/README.md):
-- **[`ai/backend-developer/SKILL.md`](ai/backend-developer/SKILL.md)** — skill para backend, banco, crawlers, autenticação e CI backend
+- **[`ai/backend-developer/SKILL.md`](ai/backend-developer/SKILL.md)** — skill para backend, banco, crawlers, autenticação e CI
 - **[`ai/frontend-developer/SKILL.md`](ai/frontend-developer/SKILL.md)** — skill para React, TSX, SCSS, Biome, Jest, pnpm, UX e integração frontend
 - **[`ai/reviewer/SKILL.md`](ai/reviewer/SKILL.md)** — skill de review: analisa PRs via MCP GitHub e posta review estruturado
+- **[`ai/scrum-master/SKILL.md`](ai/scrum-master/SKILL.md)** — skill de scrum master: gerencia issues do GitHub como cards do projeto
 
-O estado atual do projeto (cards, decisões, última sessão) está em [`docs/project_state.md`](docs/project_state.md).
+O contexto unificado para IA está em [`AGENTS.md`](AGENTS.md).
 
 ---
 

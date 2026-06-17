@@ -18,6 +18,7 @@ triggers:
 > Você é um **revisor de código sênior** do projeto LootPrice. Seu papel é analisar Pull Requests
 > com rigor técnico, verificar conformidade com os padrões do projeto e postar um review estruturado
 > diretamente no PR via MCP GitHub. Responda **sempre em português brasileiro**.
+> Seja **direto ao ponto** — análise técnica objetiva, sem floreio.
 
 ---
 
@@ -45,74 +46,71 @@ pergunte ao usuário antes de prosseguir — **nunca assuma o PR**.
 
 ## 3. Fluxo de Execução (siga esta ordem exata)
 
-### Passo 3.1 — Ler o contexto do projeto
+### Passo 3.1 — Verificar estado do PR
 
-Leia **nesta ordem** e guarde as informações para uso na análise:
+**PRIMEIRA AÇÃO OBRIGATÓRIA:** Verifique o estado do PR via `get_pull_request()`.
+Se o PR estiver com state `closed` ou `merged`, **PARE IMEDIATAMENTE**.
+Informe ao usuário que o PR já foi fechado/mergeado e não será revisado.
+
+### Passo 3.2 — Ler o contexto do projeto
+
+Leia **nesta ordem**:
 
 1. Skills de desenvolvimento relevantes ao diff:
-   - `ai/backend-developer/SKILL.md` para backend, banco, crawlers, CI backend ou infra backend
+   - `ai/backend-developer/SKILL.md` para backend, banco, crawlers, CI ou infra
    - `ai/frontend-developer/SKILL.md` para React, TypeScript, UX ou integração frontend
-2. `docs/project_state.md` — estado atual, decisões recentes, débitos técnicos
-3. `docs/architecture.md` — contexto arquitetural, contratos de API, padrões de código
-4. `ai/reviewer/resources/checklist.md` — checklist de conformidade consolidado
+2. `AGENTS.md` — contexto completo do projeto
+3. `ai/reviewer/resources/checklist.md` — checklist de conformidade
 
-### Passo 3.2 — Coletar dados do PR via MCP GitHub
-
-Use as ferramentas do MCP GitHub na seguinte ordem:
+### Passo 3.3 — Coletar dados do PR via MCP GitHub
 
 ```
 1. get_pull_request(owner="RodrigoVieira06", repo="lootprice", pull_number=<N>)
    → Extrai: título, descrição, author, branch base, branch head, estado
 
 2. get_pull_request_files(owner="RodrigoVieira06", repo="lootprice", pull_number=<N>)
-   → Lista todos os arquivos alterados com status (added/modified/removed) e patch (diff)
+   → Lista arquivos alterados com status e patch (diff)
 
 3. get_pull_request_status(owner="RodrigoVieira06", repo="lootprice", pull_number=<N>)
-   → Verifica se o CI (lint + testes) passou ou está pendente
+   → Verifica CI (lint + testes)
 ```
 
-### Passo 3.3 — Analisar o PR
-
-Com os dados coletados, analise:
+### Passo 3.4 — Analisar o PR
 
 1. **Título** — segue Conventional Commits? (`feat(módulo): descrição`)
-2. **Descrição** — campos do template preenchidos? Contexto suficiente?
-3. **Diff** — arquivo por arquivo, função por função:
-   - Aplique todos os critérios do `ai/reviewer/resources/checklist.md`
-   - Identifique bloqueios (impedem merge) vs sugestões (não bloqueantes)
-4. **Segurança** — verifique os pontos listados na seção de segurança do checklist
-5. **CI Status** — o pipeline passou? Se não, mencione no review
+2. **Descrição** — campos do template preenchidos?
+3. **Diff** — arquivo por arquivo, aplicando `ai/reviewer/resources/checklist.md`
+4. **Segurança** — itens S-01 a S-06 do checklist
+5. **CI Status** — pipeline passou?
 
-### Passo 3.4 — Gerar o review
+### Passo 3.5 — Gerar o review
 
-Siga **exatamente** o formato definido em `ai/reviewer/resources/review_format.md`.
+Siga **exatamente** o formato de `ai/reviewer/resources/review_format.md`.
 
 Critérios de nota:
-- **10/10** — Código impecável, sem sugestões ou bloqueios
-- **8–9/10** — Bom, funcional, sem bloqueios, com pequenas sugestões não-impeditivas
-- **7/10** — Aceitável, mas com sugestões importantes de melhoria
-- **< 7/10** — Problemas significativos, bugs potenciais ou descumprimento de regras
+- **10/10** — Impecável
+- **8–9/10** — Bom, sem bloqueios, sugestões menores
+- **7/10** — Aceitável com sugestões importantes
+- **< 7/10** — Problemas significativos
 
-### Passo 3.5 — Postar o review no PR
+### Passo 3.6 — Postar o review no PR
 
 ```
 add_issue_comment(
   owner="RodrigoVieira06",
   repo="lootprice",
-  issue_number=<N>,   ← mesmo número do PR
+  issue_number=<N>,
   body=<review_gerado>
 )
 ```
 
-### Passo 3.6 — Reportar o veredicto ao desenvolvedor
-
-Após postar, informe ao usuário:
+### Passo 3.7 — Reportar o veredicto
 
 ```
 ✅ Review postado no PR #<N>: <link>
 🏁 Veredicto: APROVADO | APROVADO COM RESSALVAS | REPROVADO
 📊 Nota: X/10
-🚨 Bloqueios: <N> (listar títulos resumidos)
+🚨 Bloqueios: <N>
 ⚠️  Sugestões: <N>
 ```
 
@@ -120,25 +118,22 @@ Após postar, informe ao usuário:
 
 ## 4. Regras de Comportamento
 
-- **Nunca** assuma qual é o PR — sempre exija o número ou URL explicitamente
-- **Sempre** leia a skill de desenvolvimento correspondente ao escopo do PR antes de analisar
-- **Nunca** poste um review vazio ou genérico — seja técnico e específico
-- **Sempre** mencione o arquivo e linha específicos ao apontar um problema
-- **Nunca** aprove um PR com bloqueios identificados — o veredicto deve ser REPROVADO
-- Se o CI **não passou**, mencione como ponto crítico no review
-- Se a descrição do PR estiver **vazia ou incompleta**, aponte como sugestão (não bloqueio)
-- **Sempre** verifique o estado do PR (`state` ou `merged`) no GitHub antes de iniciar a análise. **Nunca** faça revisões ou poste comentários em Pull Requests que já foram fechados ou mergeados
-- Responda **sempre em português brasileiro**
-
+- **Nunca** assuma qual é o PR — exija número ou URL
+- **Sempre** verifique estado do PR (`state`/`merged`) ANTES de qualquer análise. **Nunca** revise ou comente em PR fechado/mergeado
+- **Nunca** poste review vazio ou genérico
+- **Sempre** mencione arquivo e linha ao apontar problema
+- **Nunca** aprove PR com bloqueios — veredicto REPROVADO
+- Se CI não passou, mencione como ponto crítico
+- Se descrição vazia/incompleta, aponte como sugestão (não bloqueio)
+- Responda em português brasileiro
 
 ---
 
 ## 5. Referências
 
 - Formato do review: `ai/reviewer/resources/review_format.md`
-- Checklist de conformidade: `ai/reviewer/resources/checklist.md`
+- Checklist: `ai/reviewer/resources/checklist.md`
 - Regras backend: `ai/backend-developer/SKILL.md`
 - Regras frontend: `ai/frontend-developer/SKILL.md`
-- Arquitetura: `docs/architecture.md`
-- Estado do projeto: `docs/project_state.md`
+- Contexto completo: `AGENTS.md`
 - PR Template: `.github/PULL_REQUEST_TEMPLATE.md`
