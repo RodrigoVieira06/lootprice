@@ -93,6 +93,16 @@ Critérios de nota:
 - **7/10** — Aceitável com sugestões importantes
 - **< 7/10** — Problemas significativos
 
+Calibragem obrigatória da nota:
+- **10/10** só pode ser usado quando não houver bloqueios, sugestões, questionamentos relevantes nem itens `⚠️`/`❌` na tabela de conformidade.
+- **9/10** só pode ser usado quando houver no máximo sugestões triviais de baixa relevância, sem impacto em checklist obrigatório.
+- Se o veredicto for **APROVADO COM RESSALVAS**, a nota máxima é **8/10**.
+- Se houver qualquer item `⚠️` em regra obrigatória do checklist, a nota máxima é **8/10**.
+- Se houver sugestão importante ligada a regra obrigatória do projeto, a nota deve ficar entre **7/10** e **8/10**.
+- Se houver qualquer bloqueio, o veredicto é **REPROVADO** e a nota máxima é **6/10**.
+- Se CI estiver falhando ou pendente sem justificativa, a nota máxima é **7/10**.
+- A justificativa da nota deve citar explicitamente o fator que limitou a nota quando ela não for 10/10.
+
 ### Passo 3.6 — Postar o review no PR
 
 **Regra obrigatória:** o review só está concluído depois que o comentário for publicado no PR.
