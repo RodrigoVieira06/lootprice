@@ -7,6 +7,9 @@ on:
   push:
     branches: [master]
 
+permissions:
+  contents: read
+
 # Garante que apenas 1 workflow roda por vez por branch/PR
 concurrency:
   group: ci-${{ github.ref }}
@@ -68,35 +71,39 @@ jobs:
         run: pytest tests/ -v --tb=short
 
   # ─────────────────────────────────────────────
-  # Frontend: TypeScript + ESLint + Vite build (Desabilitado temporariamente pois a pasta frontend ainda não existe)
+  # Frontend: TypeScript + Biome + Vite build
+  # Desabilitado — reativar quando frontend/package.json existir
   # ─────────────────────────────────────────────
   # frontend:
   #   name: Frontend (React/TypeScript)
   #   runs-on: ubuntu-latest
-  # 
+  #
   #   steps:
   #     - name: Checkout
   #       uses: actions/checkout@v4
-  # 
-  #     - name: Setup Node 20
+  #
+  #     - name: Setup Node 22
   #       uses: actions/setup-node@v4
   #       with:
-  #         node-version: "20"
-  #         cache: "npm"
-  #         cache-dependency-path: frontend/package-lock.json
-  # 
+  #         node-version: "22"
+  #
+  #     - name: Setup pnpm
+  #       uses: pnpm/action-setup@v4
+  #       with:
+  #         version: latest
+  #
   #     - name: Install dependencies
   #       working-directory: frontend
-  #       run: npm ci
-  # 
+  #       run: pnpm install --frozen-lockfile
+  #
+  #     - name: Biome — Lint & Format
+  #       working-directory: frontend
+  #       run: pnpm biome ci .
+  #
   #     - name: TypeScript check
   #       working-directory: frontend
-  #       run: npx tsc --noEmit
-  # 
-  #     - name: ESLint
-  #       working-directory: frontend
-  #       run: npx eslint src/ --max-warnings 0
-  # 
+  #       run: pnpm tsc --noEmit
+  #
   #     - name: Vite build
   #       working-directory: frontend
-  #       run: npm run build
+  #       run: pnpm build

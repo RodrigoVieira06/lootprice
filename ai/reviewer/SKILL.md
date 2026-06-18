@@ -93,7 +93,20 @@ Critérios de nota:
 - **7/10** — Aceitável com sugestões importantes
 - **< 7/10** — Problemas significativos
 
+Calibragem obrigatória da nota:
+- **10/10** só pode ser usado quando não houver bloqueios, sugestões, questionamentos relevantes nem itens `⚠️`/`❌` na tabela de conformidade.
+- **9/10** só pode ser usado quando houver no máximo sugestões triviais de baixa relevância, sem impacto em checklist obrigatório.
+- Se o veredicto for **APROVADO COM RESSALVAS**, a nota máxima é **8/10**.
+- Se houver qualquer item `⚠️` em regra obrigatória do checklist, a nota máxima é **8/10**.
+- Se houver sugestão importante ligada a regra obrigatória do projeto, a nota deve ficar entre **7/10** e **8/10**.
+- Se houver qualquer bloqueio, o veredicto é **REPROVADO** e a nota máxima é **6/10**.
+- Se CI estiver falhando ou pendente sem justificativa, a nota máxima é **7/10**.
+- A justificativa da nota deve citar explicitamente o fator que limitou a nota quando ela não for 10/10.
+
 ### Passo 3.6 — Postar o review no PR
+
+**Regra obrigatória:** o review só está concluído depois que o comentário for publicado no PR.
+Se a postagem falhar, a execução deve parar e o usuário deve ser informado do erro.
 
 ```
 add_issue_comment(
@@ -121,6 +134,7 @@ add_issue_comment(
 - **Nunca** assuma qual é o PR — exija número ou URL
 - **Sempre** verifique estado do PR (`state`/`merged`) ANTES de qualquer análise. **Nunca** revise ou comente em PR fechado/mergeado
 - **Nunca** poste review vazio ou genérico
+- **Sempre** poste o comentário do review no PR; análise sem postagem é execução incompleta
 - **Sempre** mencione arquivo e linha ao apontar problema
 - **Nunca** aprove PR com bloqueios — veredicto REPROVADO
 - Se CI não passou, mencione como ponto crítico

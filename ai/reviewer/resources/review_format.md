@@ -113,6 +113,8 @@
 ## Notas sobre preenchimento
 
 - **Nota numérica:** Seja justo e criterioso. Uma nota 10 é rara — reservada para código verdadeiramente impecável.
+- **Calibragem da nota:** Se houver veredicto **APROVADO COM RESSALVAS**, a nota máxima é **8/10**. Se houver qualquer item `⚠️` em regra obrigatória do checklist, a nota máxima é **8/10**. Se a ressalva estiver ligada a regra obrigatória do projeto, use **7/10** ou **8/10**, conforme impacto. Se houver bloqueio, a nota máxima é **6/10**.
+- **Justificativa da nota:** Quando a nota for menor que 10, cite o principal fator que limitou a nota.
 - **Bloqueios vs Sugestões:** Bloqueios são problemas que causam bugs, violam regras do projeto ou criam riscos de segurança. Sugestões são melhorias de qualidade de vida que não impedem o funcionamento.
 - **Tabela de conformidade:** Preencha todos os itens. N/A é válido para regras que não se aplicam ao diff (ex: B-03 se o PR não toca campos monetários).
 - **Veredicto:** Marque apenas **um** com `[x]`. Se há qualquer bloqueio, o veredicto é obrigatoriamente REPROVADO.
