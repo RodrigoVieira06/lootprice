@@ -63,8 +63,9 @@ Para issues do GitHub, siga o fluxo de colunas do projeto:
 4. Push para branch remota.
 5. Abrir PR usando `.github/PULL_REQUEST_TEMPLATE.md` com `Closes #XX` no body.
 6. Atualizar título da issue para `[Code Review]`.
-7. Exigir CI verde e review antes de merge.
-8. Após merge, atualizar título da issue para `[Done]`.
+7. Atualizar critérios de aceitação da issue
+8. Exigir CI verde e review antes de merge.
+9. Após merge, atualizar título da issue para `[Done]`.
 
 Colunas: `[Backlog]` → `[Prioritized]` → `[Developing]` → `[Code Review]` → `[QA]` → `[Deploying]` → `[Done]`.
 
