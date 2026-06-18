@@ -1,10 +1,10 @@
 # LootPrice — Issues do MVP
 
-> **Última atualização:** 2026-06-16
+> **Última atualização:** 2026-06-17
 > **Audiência:** Desenvolvedores, Scrum Master IA, LLMs de apoio
 > **Gestão:** GitHub Issues no repositório `RodrigoVieira06/lootprice`
 
-Este documento define **todas as issues** necessárias para entregar o MVP do LootPrice (Fase 1 + Fase 1.5). Cada issue será criada como GitHub Issue com os campos descritos.
+Este documento define **todas as issues** necessárias para entregar o MVP do LootPrice (Fase 1 + Fase 1.5). Cada issue está criada como GitHub Issue com os campos descritos.
 
 ---
 
@@ -12,7 +12,7 @@ Este documento define **todas as issues** necessárias para entregar o MVP do Lo
 
 - **Tipo:** `epic` (agrupador), `task` (entregável), `subtask` (parte de uma task)
 - **Estimativa:** `S` (< 2h), `M` (2-4h), `L` (4-8h), `XL` (> 8h)
-- **Prefixo do título:** `[Backlog]` (inicial). Atualizar conforme fluxo de colunas
+- **Prefixo do título:** `[Status] #N` — Status atualizado conforme fluxo de colunas
 - **Labels de tipo:** `type:feat`, `type:fix`, `type:chore`, `type:docs`, `type:refactor`, `type:test`
 - **Labels de prioridade:** `priority:high`, `priority:medium`, `priority:low`
 - **Labels especiais:** `epic`, `blocked`
@@ -41,8 +41,11 @@ Este documento define **todas as issues** necessárias para entregar o MVP do Lo
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #1 |
+| **GitHub** | [#24](https://github.com/RodrigoVieira06/lootprice/issues/24) |
+| **Status** | `[Developing]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] chore(infra): setup inicial do repositório monorepo` |
+| **Título** | `#1 chore(infra): setup inicial do repositório monorepo` |
 | **Labels** | `type:chore`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | Nenhuma |
@@ -71,8 +74,11 @@ Configurar a estrutura base do monorepo com todas as pastas, arquivos de configu
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #2 |
+| **GitHub** | [#25](https://github.com/RodrigoVieira06/lootprice/issues/25) |
+| **Status** | `[Prioritized]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] chore(ci): pipeline CI com GitHub Actions` |
+| **Título** | `#2 chore(ci): pipeline CI com GitHub Actions` |
 | **Labels** | `type:chore`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-01 |
@@ -97,8 +103,11 @@ Criar workflow CI que roda lint e testes em cada push e PR para `master`.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #3 |
+| **GitHub** | [#26](https://github.com/RodrigoVieira06/lootprice/issues/26) |
+| **Status** | `[Prioritized]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(database): PostgreSQL + Alembic setup` |
+| **Título** | `#3 feat(database): PostgreSQL + Alembic setup` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-01 |
@@ -122,8 +131,11 @@ Configurar conexão async com PostgreSQL e inicializar Alembic para controle de 
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #4 |
+| **GitHub** | [#27](https://github.com/RodrigoVieira06/lootprice/issues/27) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(database): models stores, games, store_products, prices` |
+| **Título** | `#4 feat(database): models stores, games, store_products, prices` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-03 |
@@ -149,8 +161,11 @@ Criar models SQLModel para `stores`, `games`, `store_products` e `prices` confor
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #5 |
+| **GitHub** | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(database): model users, oauth_accounts, revoked_tokens` |
+| **Título** | `#5 feat(database): model users, oauth_accounts, revoked_tokens` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-03 |
@@ -174,8 +189,11 @@ Criar models de autenticação: `users`, `oauth_accounts` e `revoked_tokens`.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #6 |
+| **GitHub** | [#29](https://github.com/RodrigoVieira06/lootprice/issues/29) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(database): model crawler_runs` |
+| **Título** | `#6 feat(database): model crawler_runs` |
 | **Labels** | `type:feat`, `priority:medium` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-04 |
@@ -198,8 +216,11 @@ Model de observabilidade para execuções de crawler.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #7 |
+| **GitHub** | [#30](https://github.com/RodrigoVieira06/lootprice/issues/30) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(auth): autenticação JWT local — login e registro` |
+| **Título** | `#7 feat(auth): autenticação JWT local — login e registro` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-05 |
@@ -224,8 +245,11 @@ Implementar registro de usuário e login local com JWT (access + refresh tokens)
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #8 |
+| **GitHub** | [#31](https://github.com/RodrigoVieira06/lootprice/issues/31) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(auth): refresh token e logout com revogação` |
+| **Título** | `#8 feat(auth): refresh token e logout com revogação` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-07 |
@@ -244,58 +268,15 @@ Implementar renovação de tokens e logout com blacklist de `jti`.
 
 ---
 
-### ISSUE-09: OAuth Google
+### ISSUE-09: RBAC — roles user e admin
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #9 |
+| **GitHub** | [#34](https://github.com/RodrigoVieira06/lootprice/issues/34) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(auth): OAuth Google login` |
-| **Labels** | `type:feat`, `priority:medium` |
-| **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-07, ISSUE-05 |
-| **Estimativa** | L |
-
-**Descrição:**
-Login social via Google OAuth2 com upsert de user e oauth_account.
-
-**Critérios de Aceitação:**
-- [ ] `GET /auth/google` — redirect para Google OAuth
-- [ ] Callback processa code → user_info → upsert user + oauth_account
-- [ ] Retorna JWT (mesmo formato do login local)
-- [ ] Variáveis `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` em `.env`
-- [ ] Testes com mock do provider
-
----
-
-### ISSUE-10: OAuth Discord
-
-| Campo | Valor |
-|---|---|
-| **Tipo** | task |
-| **Título** | `[Backlog] feat(auth): OAuth Discord login` |
-| **Labels** | `type:feat`, `priority:medium` |
-| **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-09 |
-| **Estimativa** | M |
-
-**Descrição:**
-Login social via Discord OAuth2, mesma estrutura do Google.
-
-**Critérios de Aceitação:**
-- [ ] `GET /auth/discord` — redirect + callback
-- [ ] Upsert user + oauth_account
-- [ ] JWT retornado
-- [ ] Variáveis `DISCORD_CLIENT_ID` e `DISCORD_CLIENT_SECRET`
-- [ ] Testes com mock
-
----
-
-### ISSUE-11: RBAC — roles user e admin
-
-| Campo | Valor |
-|---|---|
-| **Tipo** | task |
-| **Título** | `[Backlog] feat(auth): RBAC com roles user e admin` |
+| **Título** | `#9 feat(auth): RBAC com roles user e admin` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-07 |
@@ -314,12 +295,15 @@ Dependencies de autorização para proteger rotas admin.
 
 ## E4 — Crawlers
 
-### ISSUE-12: Normalização de nomes e geração de slugs
+### ISSUE-10: Normalização de nomes e geração de slugs
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #10 |
+| **GitHub** | [#35](https://github.com/RodrigoVieira06/lootprice/issues/35) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(crawler): normalização de nomes e geração de slugs` |
+| **Título** | `#10 feat(crawler): normalização de nomes e geração de slugs` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-04 |
@@ -337,15 +321,18 @@ Lógica de normalização que gera `canonical_name` e `slug` a partir do título
 
 ---
 
-### ISSUE-13: Crawler Steam API
+### ISSUE-11: Crawler Steam API
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #11 |
+| **GitHub** | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(crawler): implementar crawler Steam via API pública` |
+| **Título** | `#11 feat(crawler): implementar crawler Steam via API pública` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-04, ISSUE-12 |
+| **Dependências** | ISSUE-04, ISSUE-10 |
 | **Estimativa** | L |
 
 **Descrição:**
@@ -361,15 +348,18 @@ Crawler que consulta a API pública da Steam e retorna dados no formato `RawGame
 
 ---
 
-### ISSUE-14: Crawler Nuuvem (scraper)
+### ISSUE-12: Crawler Nuuvem (scraper)
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #12 |
+| **GitHub** | [#37](https://github.com/RodrigoVieira06/lootprice/issues/37) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(crawler): implementar scraper Nuuvem` |
+| **Título** | `#12 feat(crawler): implementar scraper Nuuvem` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-04, ISSUE-12 |
+| **Dependências** | ISSUE-04, ISSUE-10 |
 | **Estimativa** | XL |
 
 **Descrição:**
@@ -386,15 +376,18 @@ Scraper que coleta dados da Nuuvem via HTTPX + BeautifulSoup4.
 
 ---
 
-### ISSUE-15: Crawler runner (orquestrador)
+### ISSUE-13: Crawler runner (orquestrador)
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #13 |
+| **GitHub** | [#38](https://github.com/RodrigoVieira06/lootprice/issues/38) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(crawler): implementar runner orquestrador de crawlers` |
+| **Título** | `#13 feat(crawler): implementar runner orquestrador de crawlers` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-13, ISSUE-14, ISSUE-06 |
+| **Dependências** | ISSUE-11, ISSUE-12, ISSUE-06 |
 | **Estimativa** | L |
 
 **Descrição:**
@@ -413,12 +406,15 @@ Orquestrador que roda todos os crawlers, faz upsert no banco e registra `crawler
 
 ## E5 — API REST
 
-### ISSUE-16: Endpoints públicos — busca, listagem e detalhe
+### ISSUE-14: Endpoints públicos — busca, listagem e detalhe
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #14 |
+| **GitHub** | [#39](https://github.com/RodrigoVieira06/lootprice/issues/39) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(api): endpoints públicos — busca, listagem e detalhe de jogos` |
+| **Título** | `#14 feat(api): endpoints públicos — busca, listagem e detalhe de jogos` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
 | **Dependências** | ISSUE-04 |
@@ -438,15 +434,18 @@ Implementar os endpoints públicos: busca, listagem paginada e detalhe de jogo c
 
 ---
 
-### ISSUE-17: Endpoints admin
+### ISSUE-15: Endpoints admin
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #15 |
+| **GitHub** | [#40](https://github.com/RodrigoVieira06/lootprice/issues/40) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(api): endpoints de administração` |
+| **Título** | `#15 feat(api): endpoints de administração` |
 | **Labels** | `type:feat`, `priority:medium` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-11, ISSUE-15, ISSUE-16 |
+| **Dependências** | ISSUE-09, ISSUE-13, ISSUE-14 |
 | **Estimativa** | M |
 
 **Descrição:**
@@ -464,15 +463,18 @@ Endpoints protegidos por RBAC para administração.
 
 ## E6 — Segurança & Rate Limiting
 
-### ISSUE-18: Rate limiting com slowapi
+### ISSUE-16: Rate limiting com slowapi
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #16 |
+| **GitHub** | [#41](https://github.com/RodrigoVieira06/lootprice/issues/41) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(security): rate limiting com slowapi` |
+| **Título** | `#16 feat(security): rate limiting com slowapi` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-16 |
+| **Dependências** | ISSUE-14 |
 | **Estimativa** | M |
 
 **Descrição:**
@@ -487,17 +489,74 @@ Configurar throttling em rotas públicas com `get_real_ip()` para compatibilidad
 
 ---
 
+## E3 (continuação) — OAuth
+
+### ISSUE-17: OAuth Google
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #17 |
+| **GitHub** | [#32](https://github.com/RodrigoVieira06/lootprice/issues/32) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#17 feat(auth): OAuth Google login` |
+| **Labels** | `type:feat`, `priority:medium` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | ISSUE-07, ISSUE-05 |
+| **Estimativa** | L |
+
+**Descrição:**
+Login social via Google OAuth2 com upsert de user e oauth_account.
+
+**Critérios de Aceitação:**
+- [ ] `GET /auth/google` — redirect para Google OAuth
+- [ ] Callback processa code → user_info → upsert user + oauth_account
+- [ ] Retorna JWT (mesmo formato do login local)
+- [ ] Variáveis `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` em `.env`
+- [ ] Testes com mock do provider
+
+---
+
+### ISSUE-18: OAuth Discord
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #18 |
+| **GitHub** | [#33](https://github.com/RodrigoVieira06/lootprice/issues/33) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#18 feat(auth): OAuth Discord login` |
+| **Labels** | `type:feat`, `priority:medium` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | ISSUE-17 |
+| **Estimativa** | M |
+
+**Descrição:**
+Login social via Discord OAuth2, mesma estrutura do Google.
+
+**Critérios de Aceitação:**
+- [ ] `GET /auth/discord` — redirect + callback
+- [ ] Upsert user + oauth_account
+- [ ] JWT retornado
+- [ ] Variáveis `DISCORD_CLIENT_ID` e `DISCORD_CLIENT_SECRET`
+- [ ] Testes com mock
+
+---
+
 ## E7 — Frontend MVP
 
 ### ISSUE-19: Setup React SPA
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #19 |
+| **GitHub** | [#42](https://github.com/RodrigoVieira06/lootprice/issues/42) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(frontend): setup React SPA com Vite + TSX + SCSS` |
+| **Título** | `#19 feat(frontend): setup React SPA com Vite + TSX + SCSS` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1.5 - Frontend |
-| **Dependências** | ISSUE-16 (backend API disponível) |
+| **Dependências** | ISSUE-14 (backend API disponível) |
 | **Estimativa** | L |
 
 **Descrição:**
@@ -522,11 +581,14 @@ Criar a base do frontend React com toda a toolchain configurada.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #20 |
+| **GitHub** | [#43](https://github.com/RodrigoVieira06/lootprice/issues/43) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(frontend): página de busca e listagem de jogos` |
+| **Título** | `#20 feat(frontend): página de busca e listagem de jogos` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1.5 - Frontend |
-| **Dependências** | ISSUE-19, ISSUE-16 |
+| **Dependências** | ISSUE-19, ISSUE-14 |
 | **Estimativa** | L |
 
 **Descrição:**
@@ -547,8 +609,11 @@ Página principal com barra de busca e grid de jogos com menor preço.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #21 |
+| **GitHub** | [#44](https://github.com/RodrigoVieira06/lootprice/issues/44) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(frontend): página de detalhe do jogo com comparação de preços` |
+| **Título** | `#21 feat(frontend): página de detalhe do jogo com comparação de preços` |
 | **Labels** | `type:feat`, `priority:high` |
 | **Milestone** | Fase 1.5 - Frontend |
 | **Dependências** | ISSUE-20 |
@@ -571,8 +636,11 @@ Página de detalhe mostrando todos os preços de todas as lojas, ordenados.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #22 |
+| **GitHub** | [#45](https://github.com/RodrigoVieira06/lootprice/issues/45) |
+| **Status** | `[Backlog]` |
 | **Tipo** | task |
-| **Título** | `[Backlog] feat(frontend): páginas de login e registro` |
+| **Título** | `#22 feat(frontend): páginas de login e registro` |
 | **Labels** | `type:feat`, `priority:medium` |
 | **Milestone** | Fase 1.5 - Frontend |
 | **Dependências** | ISSUE-19, ISSUE-07 |
@@ -599,11 +667,14 @@ Formulários de login (local + social) e registro.
 
 | Campo | Valor |
 |---|---|
+| **Ordem** | #23 |
+| **GitHub** | [#46](https://github.com/RodrigoVieira06/lootprice/issues/46) |
+| **Status** | `[Backlog]` ⚠️ bloqueado |
 | **Tipo** | task |
-| **Título** | `[Backlog] chore(infra): Nginx + CF-Connecting-IP` |
+| **Título** | `#23 chore(infra): Nginx + CF-Connecting-IP` |
 | **Labels** | `type:chore`, `priority:low`, `blocked` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-18 |
+| **Dependências** | ISSUE-16 |
 | **Estimativa** | M |
 
 **Descrição:**
@@ -623,58 +694,60 @@ Configurar Nginx como proxy reverso com reescrita de header para IP real do Clou
 ## Grafo de Dependências
 
 ```
-ISSUE-01 (setup)
-  ├── ISSUE-02 (CI)
-  ├── ISSUE-03 (PostgreSQL + Alembic)
-  │     ├── ISSUE-04 (models lojas/jogos)
-  │     │     ├── ISSUE-06 (crawler_runs)
-  │     │     ├── ISSUE-12 (normalização)
-  │     │     │     ├── ISSUE-13 (Steam crawler)
-  │     │     │     └── ISSUE-14 (Nuuvem crawler)
-  │     │     │           └── ISSUE-15 (runner) ← depende de 13, 14, 06
-  │     │     └── ISSUE-16 (API pública)
-  │     │           ├── ISSUE-17 (API admin) ← depende de 11, 15, 16
-  │     │           ├── ISSUE-18 (rate limiting)
-  │     │           │     └── ISSUE-23 (Nginx) ← bloqueado
-  │     │           └── ISSUE-19 (frontend setup) ← Fase 1.5
-  │     │                 ├── ISSUE-20 (busca)
-  │     │                 │     └── ISSUE-21 (detalhe)
-  │     │                 └── ISSUE-22 (login/registro)
-  │     └── ISSUE-05 (models users)
-  │           ├── ISSUE-07 (JWT local)
-  │           │     ├── ISSUE-08 (refresh/logout)
-  │           │     ├── ISSUE-09 (OAuth Google)
-  │           │     │     └── ISSUE-10 (OAuth Discord)
-  │           │     └── ISSUE-11 (RBAC)
-  │           └── ISSUE-09 (OAuth Google) ← depende de 05 e 07
+ISSUE-01 (#1) — setup
+  ├── ISSUE-02 (#2) — CI
+  ├── ISSUE-03 (#3) — PostgreSQL + Alembic
+  │     ├── ISSUE-04 (#4) — models lojas/jogos
+  │     │     ├── ISSUE-06 (#6) — crawler_runs
+  │     │     ├── ISSUE-10 (#10) — normalização
+  │     │     │     ├── ISSUE-11 (#11) — Steam crawler
+  │     │     │     └── ISSUE-12 (#12) — Nuuvem crawler
+  │     │     │           └── ISSUE-13 (#13) — runner ← depende de 11, 12, 06
+  │     │     └── ISSUE-14 (#14) — API pública
+  │     │           ├── ISSUE-15 (#15) — API admin ← depende de 09, 13, 14
+  │     │           ├── ISSUE-16 (#16) — rate limiting
+  │     │           │     └── ISSUE-23 (#23) — Nginx ← bloqueado
+  │     │           └── ISSUE-19 (#19) — frontend setup ← Fase 1.5
+  │     │                 ├── ISSUE-20 (#20) — busca
+  │     │                 │     └── ISSUE-21 (#21) — detalhe
+  │     │                 └── ISSUE-22 (#22) — login/registro
+  │     └── ISSUE-05 (#5) — models users
+  │           ├── ISSUE-07 (#7) — JWT local
+  │           │     ├── ISSUE-08 (#8) — refresh/logout
+  │           │     ├── ISSUE-09 (#9) — RBAC
+  │           │     └── ISSUE-17 (#17) — OAuth Google
+  │           │           └── ISSUE-18 (#18) — OAuth Discord
+  │           └── ISSUE-17 (#17) — OAuth Google ← depende de 05 e 07
 ```
 
 ---
 
-## Ordem de Execução Sugerida
+## Ordem de Execução
 
-Sequência recomendada respeitando dependências e prioridades:
+Sequência respeitando dependências e prioridades:
 
-1. **ISSUE-01** — Setup monorepo
-2. **ISSUE-02** — CI
-3. **ISSUE-03** — PostgreSQL + Alembic
-4. **ISSUE-04** — Models lojas/jogos (paralelo com 05)
-5. **ISSUE-05** — Models users
-6. **ISSUE-06** — Model crawler_runs
-7. **ISSUE-07** — JWT local
-8. **ISSUE-08** — Refresh/logout
-9. **ISSUE-11** — RBAC
-10. **ISSUE-12** — Normalização
-11. **ISSUE-13** — Steam crawler
-12. **ISSUE-14** — Nuuvem crawler
-13. **ISSUE-15** — Runner
-14. **ISSUE-16** — API pública
-15. **ISSUE-17** — API admin
-16. **ISSUE-18** — Rate limiting
-17. **ISSUE-09** — OAuth Google
-18. **ISSUE-10** — OAuth Discord
-19. **ISSUE-19** — Frontend setup (Fase 1.5)
-20. **ISSUE-20** — Busca
-21. **ISSUE-21** — Detalhe
-22. **ISSUE-22** — Login/registro
-23. **ISSUE-23** — Nginx (quando domínio disponível)
+| Ordem | ISSUE | GitHub | Status |
+|---|---|---|---|
+| #1 | Setup monorepo | [#24](https://github.com/RodrigoVieira06/lootprice/issues/24) | 🔄 **Developing** |
+| #2 | CI | [#25](https://github.com/RodrigoVieira06/lootprice/issues/25) | ⏳ **Prioritized** |
+| #3 | PostgreSQL + Alembic | [#26](https://github.com/RodrigoVieira06/lootprice/issues/26) | ⏳ **Prioritized** |
+| #4 | Models lojas/jogos | [#27](https://github.com/RodrigoVieira06/lootprice/issues/27) | 📋 Backlog |
+| #5 | Models users | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) | 📋 Backlog |
+| #6 | Model crawler_runs | [#29](https://github.com/RodrigoVieira06/lootprice/issues/29) | 📋 Backlog |
+| #7 | JWT local | [#30](https://github.com/RodrigoVieira06/lootprice/issues/30) | 📋 Backlog |
+| #8 | Refresh/logout | [#31](https://github.com/RodrigoVieira06/lootprice/issues/31) | 📋 Backlog |
+| #9 | RBAC | [#34](https://github.com/RodrigoVieira06/lootprice/issues/34) | 📋 Backlog |
+| #10 | Normalização | [#35](https://github.com/RodrigoVieira06/lootprice/issues/35) | 📋 Backlog |
+| #11 | Steam crawler | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) | 📋 Backlog |
+| #12 | Nuuvem crawler | [#37](https://github.com/RodrigoVieira06/lootprice/issues/37) | 📋 Backlog |
+| #13 | Runner | [#38](https://github.com/RodrigoVieira06/lootprice/issues/38) | 📋 Backlog |
+| #14 | API pública | [#39](https://github.com/RodrigoVieira06/lootprice/issues/39) | 📋 Backlog |
+| #15 | API admin | [#40](https://github.com/RodrigoVieira06/lootprice/issues/40) | 📋 Backlog |
+| #16 | Rate limiting | [#41](https://github.com/RodrigoVieira06/lootprice/issues/41) | 📋 Backlog |
+| #17 | OAuth Google | [#32](https://github.com/RodrigoVieira06/lootprice/issues/32) | 📋 Backlog |
+| #18 | OAuth Discord | [#33](https://github.com/RodrigoVieira06/lootprice/issues/33) | 📋 Backlog |
+| #19 | Frontend setup (Fase 1.5) | [#42](https://github.com/RodrigoVieira06/lootprice/issues/42) | 📋 Backlog |
+| #20 | Busca | [#43](https://github.com/RodrigoVieira06/lootprice/issues/43) | 📋 Backlog |
+| #21 | Detalhe | [#44](https://github.com/RodrigoVieira06/lootprice/issues/44) | 📋 Backlog |
+| #22 | Login/registro | [#45](https://github.com/RodrigoVieira06/lootprice/issues/45) | 📋 Backlog |
+| #23 | Nginx ⚠️ bloqueado | [#46](https://github.com/RodrigoVieira06/lootprice/issues/46) | 📋 Backlog |
