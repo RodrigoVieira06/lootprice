@@ -2,7 +2,7 @@
 
 > **Versão:** 0.3.0-MVP
 > **Status:** Desenvolvimento Ativo
-> **Última atualização:** 2026-06-16
+> **Última atualização:** 2026-06-18
 > **Audiência:** LLMs de apoio (Antigravity IDE, Claude Code, Gemini CLI, Cursor, Copilot)
 > **Documentação humana:** `README.md`
 
@@ -621,7 +621,7 @@ commit-msg:
 | Campo | Valor |
 |---|---|
 | **Versão** | 0.3.0 |
-| **Última atualização** | 2026-06-16 |
+| **Última atualização** | 2026-06-18 |
 | **Fase atual** | Desenvolvimento — Setup inicial |
 
 ### Estrutura de Arquivos Atual
@@ -642,7 +642,7 @@ lootprice/
 │   └── issues_mvp.md                 ✅
 ├── backend/
 │   ├── app/ (api/, core/, models/, schemas/, crawlers/)  ✅
-│   ├── tests/                        ✅
+│   ├── tests/ (conftest.py, test_main.py)  ✅
 │   ├── .env.example                  ✅
 │   ├── main.py                       ✅
 │   ├── requirements.txt              ✅

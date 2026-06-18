@@ -43,7 +43,7 @@ Este documento define **todas as issues** necessárias para entregar o MVP do Lo
 |---|---|
 | **Ordem** | #1 |
 | **GitHub** | [#24](https://github.com/RodrigoVieira06/lootprice/issues/24) |
-| **Status** | `[Developing]` |
+| **Status** | `[Done]` |
 | **Tipo** | task |
 | **Título** | `#1 chore(infra): setup inicial do repositório monorepo` |
 | **Labels** | `type:chore`, `priority:high` |
@@ -76,7 +76,7 @@ Configurar a estrutura base do monorepo com todas as pastas, arquivos de configu
 |---|---|
 | **Ordem** | #2 |
 | **GitHub** | [#25](https://github.com/RodrigoVieira06/lootprice/issues/25) |
-| **Status** | `[Prioritized]` |
+| **Status** | `[Code Review]` |
 | **Tipo** | task |
 | **Título** | `#2 chore(ci): pipeline CI com GitHub Actions` |
 | **Labels** | `type:chore`, `priority:high` |
@@ -728,8 +728,8 @@ Sequência respeitando dependências e prioridades:
 
 | Ordem | ISSUE | GitHub | Status |
 |---|---|---|---|
-| #1 | Setup monorepo | [#24](https://github.com/RodrigoVieira06/lootprice/issues/24) | 🔄 **Developing** |
-| #2 | CI | [#25](https://github.com/RodrigoVieira06/lootprice/issues/25) | ⏳ **Prioritized** |
+| #1 | Setup monorepo | [#24](https://github.com/RodrigoVieira06/lootprice/issues/24) | ✅ **Done** |
+| #2 | CI | [#25](https://github.com/RodrigoVieira06/lootprice/issues/25) | 🔄 **Code Review** |
 | #3 | PostgreSQL + Alembic | [#26](https://github.com/RodrigoVieira06/lootprice/issues/26) | ⏳ **Prioritized** |
 | #4 | Models lojas/jogos | [#27](https://github.com/RodrigoVieira06/lootprice/issues/27) | 📋 Backlog |
 | #5 | Models users | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) | 📋 Backlog |
