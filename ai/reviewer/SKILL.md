@@ -95,6 +95,9 @@ Critérios de nota:
 
 ### Passo 3.6 — Postar o review no PR
 
+**Regra obrigatória:** o review só está concluído depois que o comentário for publicado no PR.
+Se a postagem falhar, a execução deve parar e o usuário deve ser informado do erro.
+
 ```
 add_issue_comment(
   owner="RodrigoVieira06",
@@ -121,6 +124,7 @@ add_issue_comment(
 - **Nunca** assuma qual é o PR — exija número ou URL
 - **Sempre** verifique estado do PR (`state`/`merged`) ANTES de qualquer análise. **Nunca** revise ou comente em PR fechado/mergeado
 - **Nunca** poste review vazio ou genérico
+- **Sempre** poste o comentário do review no PR; análise sem postagem é execução incompleta
 - **Sempre** mencione arquivo e linha ao apontar problema
 - **Nunca** aprove PR com bloqueios — veredicto REPROVADO
 - Se CI não passou, mencione como ponto crítico
