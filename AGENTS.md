@@ -399,6 +399,8 @@ class BaseCrawler(ABC):
 ```bash
 make install   # Cria .venv, instala requirements.txt, instala Lefthook
 make dev       # Docker Compose up + uvicorn --reload
+make db-up     # Sobe apenas o PostgreSQL via Docker Compose
+make migrate   # Executa migrations Alembic
 make test      # Pytest do backend
 make lint      # ruff check .
 make format    # ruff format .
@@ -621,8 +623,8 @@ commit-msg:
 | Campo | Valor |
 |---|---|
 | **Versão** | 0.3.0 |
-| **Última atualização** | 2026-06-18 |
-| **Fase atual** | Desenvolvimento — Setup inicial |
+| **Última atualização** | 2026-06-21 |
+| **Fase atual** | Desenvolvimento — PostgreSQL + Alembic setup |
 
 ### Estrutura de Arquivos Atual
 
@@ -641,8 +643,15 @@ lootprice/
 │   ├── database_schema.md            ✅
 │   └── issues_mvp.md                 ✅
 ├── backend/
-│   ├── app/ (api/, core/, models/, schemas/, crawlers/)  ✅
-│   ├── tests/ (conftest.py, test_main.py)  ✅
+│   ├── app/
+│   │   ├── core/config.py          ✅
+│   │   ├── core/database.py        ✅
+│   │   └── api/, models/, schemas/, crawlers/  ✅
+│   ├── migrations/                 ✅
+│   │   ├── env.py                  ✅
+│   │   └── versions/202606210001_create_postgresql_extensions.py ✅
+│   ├── tests/ (conftest.py, test_main.py, test_database.py) ✅
+│   ├── alembic.ini                 ✅
 │   ├── .env.example                  ✅
 │   ├── main.py                       ✅
 │   ├── requirements.txt              ✅
@@ -675,6 +684,8 @@ lootprice/
 | 2026-06 | Schema separa `games`, `store_products`, `prices` | Evitar acoplamento jogo/loja |
 | 2026-06 | Migração de Jira para GitHub Issues | Centralizar gestão no mesmo ecossistema |
 | 2026-06 | Contexto IA unificado em `AGENTS.md` | Eliminar fragmentação entre 3 arquivos |
+| 2026-06 | Alembic configurado em modo async | Compatível com `postgresql+asyncpg` e FastAPI async |
+| 2026-06 | Makefile usa `docker compose` | Ambiente local usa Docker Compose v2 |
 
 ### Débitos Técnicos
 
