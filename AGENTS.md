@@ -144,11 +144,11 @@ lootprice/                          # Raiz do Monorepo
 │
 ├── ai/
 │   ├── README.md                   # Índice das ferramentas de IA
-│   ├── backend-developer/
+│   ├── lootprice-backend-developer/
 │   │   └── SKILL.md                # Skill: backend sênior LootPrice
-│   ├── frontend-developer/
+│   ├── lootprice-frontend-developer/
 │   │   └── SKILL.md                # Skill: frontend sênior LootPrice
-│   ├── reviewer/
+│   ├── lootprice-reviewer/
 │   │   ├── SKILL.md                # Skill: revisor de código LootPrice
 │   │   └── resources/
 │   │       ├── checklist.md        # Checklist de conformidade
