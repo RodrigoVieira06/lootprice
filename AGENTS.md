@@ -126,7 +126,7 @@ Usuário busca jogo → LootPrice consulta N lojas → Resultado: lista ordenada
 | Makefile | Atalhos: `make install`, `make dev`, `make test`, `make lint`, `make format` |
 | Lefthook | Git hooks: lint + commit message no pre-commit |
 | GitHub Actions | CI: lint, testes, build a cada push/PR |
-| GitHub Issues | Gestão de backlog e tarefas — integrado via MCP GitHub |
+| GitHub Issues | Gestão de backlog e tarefas — use `gh` para escrita e MCP GitHub para leitura estruturada |
 
 ---
 
@@ -497,6 +497,11 @@ refactor/<descricao>  test/<descricao>
 │   ├── Lint (Ruff)                                            │
 │   ├── Testes (Pytest)                                        │
 │   └── Build/test (Frontend — futuro)                         │
+│                                                              │
+│  gh CLI                                                      │
+│   ├── Escrita em issues/PRs quando MCP GitHub retornar 403   │
+│   ├── Criar PRs e comentar reviews                           │
+│   └── Consultar checks com gh pr checks                       │
 └──────────────────────────────────────────────────────────────┘
               │
               ▼
@@ -529,7 +534,7 @@ Issues do GitHub são os "cards" do projeto. O status de cada issue é sinalizad
 [Developing] feat(crawler): implementar scraper Nuuvem
 ```
 
-Para mover uma issue de coluna, atualize o prefixo do título via `update_issue()`.
+Para mover uma issue de coluna, atualize o prefixo do título via `gh issue edit`.
 
 ### Regras de Uso de IA no Projeto
 
@@ -537,6 +542,7 @@ Para mover uma issue de coluna, atualize o prefixo do título via `update_issue(
 2. Commits seguem Conventional Commits
 3. LLMs usam este arquivo como contexto primário — mantenha-o atualizado
 4. Revisões de PR por IA são complementares ao entendimento humano
+5. Para operações de escrita no GitHub, use `gh` por padrão; MCP GitHub pode ser usado para leitura estruturada
 
 ---
 
@@ -546,18 +552,18 @@ Para mover uma issue de coluna, atualize o prefixo do título via `update_issue(
 
 ```
 1. Criar issue no GitHub (ou receber issue existente)
-2. Atualizar título da issue para [Developing] via update_issue()
+2. Atualizar título da issue para [Developing] via `gh issue edit`
 3. Criar branch local: git checkout -b <prefixo>/<descricao>
 4. Desenvolver e realizar commits convencionais incrementais
 5. Realizar o push para a branch remota
 6. Abrir Pull Request contra master (com "Closes #XX" no body)
-7. Atualizar título da issue para [Code Review]
+7. Atualizar título da issue para [Code Review] via `gh issue edit`
 8. Executar/Aguardar review (AI review + CI status checks)
 9. Se aprovado, mergear o PR
 10. Atualizar título da issue para [Done]
 ```
 
-**Antes de interagir com qualquer PR:** verificar `state` via `get_pull_request()`. **Nunca** faça push, commit ou comente em PR com state `closed` ou `merged`.
+**Antes de interagir com qualquer PR:** verificar `state` e `merged` via `gh pr view <N> --json state,merged`. **Nunca** faça push, commit ou comente em PR com state `closed` ou `merged`.
 
 ---
 
@@ -590,7 +596,7 @@ jobs:
 Review manual invocando `ai/reviewer/SKILL.md` com MCP GitHub:
 
 ```
-PR aberto → IA invoca skill → Lê contexto + diff → Posta review no PR
+PR aberto → IA invoca skill → Lê contexto + diff → Posta review no PR via `gh pr comment`
 ```
 
 ### Git Hooks (Lefthook)
@@ -679,13 +685,18 @@ lootprice/
 | 2026-06 | Tailscale + Cloudflare Tunnel | SSH seguro sem IP fixo |
 | 2026-06 | Manter `python-jose` no MVP | Trocar adiciona risco sem benefício imediato |
 | 2026-06 | PostgreSQL bound em `127.0.0.1` | Segurança: não escuta em todos os IPs |
-| 2026-06 | AI Review via Skill (não Actions) | Skill via MCP tem contexto superior |
+| 2026-06 | AI Review via Skill (não Actions) | Skill local tem contexto superior e usa `gh` para postar |
 | 2026-06 | Stack frontend: SCSS + Biome + Jest + pnpm | Padronizar antes da criação frontend |
 | 2026-06 | Schema separa `games`, `store_products`, `prices` | Evitar acoplamento jogo/loja |
 | 2026-06 | Migração de Jira para GitHub Issues | Centralizar gestão no mesmo ecossistema |
 | 2026-06 | Contexto IA unificado em `AGENTS.md` | Eliminar fragmentação entre 3 arquivos |
 | 2026-06 | Alembic configurado em modo async | Compatível com `postgresql+asyncpg` e FastAPI async |
 | 2026-06 | Makefile usa `docker compose` | Ambiente local usa Docker Compose v2 |
+<<<<<<< Updated upstream
+=======
+| 2026-06 | Models core de catálogo criados antes das rotas | `stores`, `games`, `store_products` e `prices` sustentam busca e comparação |
+| 2026-06 | Skills usam `gh` para escrita no GitHub | Evitar bloqueios `403 Resource not accessible by integration` do MCP e reduzir retrabalho |
+>>>>>>> Stashed changes
 
 ### Débitos Técnicos
 
@@ -774,13 +785,13 @@ Seja **direto ao ponto**. Respostas objetivas, sem explicações desnecessárias
 ### Antes de Agir
 
 1. Leia este arquivo (`AGENTS.md`)
-2. Leia a skill relevante: `ai/backend-developer/SKILL.md`, `ai/frontend-developer/SKILL.md`, ou `ai/scrum-master/SKILL.md`
+2. Leia a skill relevante: `ai/lootprice-backend-developer/SKILL.md`, `ai/lootprice-frontend-developer/SKILL.md`, ou `ai/lootprice-scrum-master/SKILL.md`
 3. Verifique o estado real do repositório (árvore de arquivos, Makefile, CI)
 
 ### Regras Invioláveis
 
 - **Nunca faça push direto na `master`** — sempre crie branch nova
-- **Nunca interaja com PR fechado/mergeado** — verifique `state` via `get_pull_request()` antes
+- **Nunca interaja com PR fechado/mergeado** — verifique `state` e `merged` via `gh pr view <N> --json state,merged` antes
 - **Nunca reutilize branch de PR fechado**
 - **Nunca commite sem branch** — `git checkout -b <prefixo>/<descricao>` primeiro
 - **Sempre use Conventional Commits**

@@ -38,6 +38,14 @@ Python 3.11 · FastAPI · SQLModel · Alembic · PostgreSQL 15 · Pydantic v2 ·
 
 Comandos ativos: `make install`, `make dev`, `make test`, `make lint`, `make format`.
 
+## GitHub e Economia de Tokens
+
+- Para operações de escrita no GitHub, use `gh` por padrão: `gh issue edit`, `gh pr create`, `gh pr checks`, `gh pr comment`.
+- Use MCP GitHub para leitura estruturada quando for mais barato; se qualquer escrita via MCP retornar `403 Resource not accessible by integration`, não tente de novo via MCP: use `gh`.
+- Antes de escrever no GitHub, rode `gh auth status` uma vez quando houver dúvida de autenticação.
+- Se `git push` via SSH falhar por configuração local, faça push por HTTPS sem alterar o remote: `git push https://github.com/RodrigoVieira06/lootprice.git <branch>`.
+- Ao relatar validações, resuma só o resultado final. Não cole logs longos se não houver falha.
+
 ## Regras Obrigatórias
 
 - Use `async/await` em rotas FastAPI e I/O.
@@ -57,14 +65,14 @@ Comandos ativos: `make install`, `make dev`, `make test`, `make lint`, `make for
 
 Para issues do GitHub, siga o fluxo de colunas do projeto:
 
-1. Atualizar título da issue para `[Developing]` via `update_issue()`.
+1. Atualizar título da issue para `[Developing]` via `gh issue edit`.
 2. Criar branch nova a partir de `master`: `git checkout -b <prefixo>/<descricao>`.
 3. Desenvolver com commits Conventional Commits.
 4. Push para branch remota.
-5. Abrir PR usando `.github/PULL_REQUEST_TEMPLATE.md` com `Closes #XX` no body.
-6. Atualizar título da issue para `[Code Review]`.
+5. Abrir PR com `gh pr create`, usando `.github/PULL_REQUEST_TEMPLATE.md` e `Closes #XX` no body.
+6. Atualizar título da issue para `[Code Review]` via `gh issue edit`.
 7. Atualizar critérios de aceitação da issue
-8. Exigir CI verde e review antes de merge.
+8. Verificar CI com `gh pr checks <PR> --watch`.
 9. Após merge, atualizar título da issue para `[Done]`.
 
 Colunas: `[Backlog]` → `[Prioritized]` → `[Developing]` → `[Code Review]` → `[QA]` → `[Deploying]` → `[Done]`.
@@ -73,7 +81,7 @@ Colunas: `[Backlog]` → `[Prioritized]` → `[Developing]` → `[Code Review]` 
 
 - **Nunca** faça push direto na `master`.
 - **Nunca** reutilize branch de PR fechado ou mergeado.
-- **Antes de interagir com qualquer PR**, verifique o estado via `get_pull_request()`. **Nunca** faça push, commit ou comente em PR com state `closed` ou `merged`.
+- **Antes de interagir com qualquer PR**, verifique o estado via `gh pr view <N> --json state,merged`. **Nunca** faça push, commit ou comente em PR com state `closed` ou `merged`.
 - Sempre crie branch nova: `git checkout -b <prefixo>/<descricao>`.
 
 ## Encerramento
