@@ -41,11 +41,21 @@ class Store(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
     updated_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
 
     store_products: list["StoreProduct"] = Relationship(back_populates="store")

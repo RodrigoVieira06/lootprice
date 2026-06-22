@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, Index
+from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, Index, text
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -37,11 +37,21 @@ class Game(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
     updated_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
 
     store_products: list["StoreProduct"] = Relationship(back_populates="game")

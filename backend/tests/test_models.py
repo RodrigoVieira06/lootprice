@@ -20,6 +20,13 @@ def index_names(model: type[SQLModel]) -> set[str]:
     return {index.name for index in model.__table__.indexes}
 
 
+def server_default_sql(model: type[SQLModel], column_name: str) -> str:
+    server_default = model.__table__.c[column_name].server_default
+
+    assert server_default is not None
+    return str(server_default.arg)
+
+
 def test_core_catalog_models_are_registered_in_metadata() -> None:
     assert {"stores", "games", "store_products", "prices"}.issubset(
         SQLModel.metadata.tables
@@ -110,3 +117,15 @@ def test_price_model_uses_decimal_numeric_and_constraints() -> None:
         "idx_prices_price_brl",
         "idx_prices_scraped_at",
     }.issubset(index_names(Price))
+
+
+def test_timestamp_columns_keep_database_defaults_in_metadata() -> None:
+    assert server_default_sql(Store, "created_at") == "now()"
+    assert server_default_sql(Store, "updated_at") == "now()"
+    assert server_default_sql(Game, "created_at") == "now()"
+    assert server_default_sql(Game, "updated_at") == "now()"
+    assert server_default_sql(StoreProduct, "first_seen_at") == "now()"
+    assert server_default_sql(StoreProduct, "created_at") == "now()"
+    assert server_default_sql(StoreProduct, "updated_at") == "now()"
+    assert server_default_sql(Price, "created_at") == "now()"
+    assert server_default_sql(Price, "updated_at") == "now()"

@@ -69,7 +69,12 @@ class StoreProduct(SQLModel, table=True):
     )
     first_seen_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
     last_seen_at: datetime | None = Field(
         default=None,
@@ -77,11 +82,21 @@ class StoreProduct(SQLModel, table=True):
     )
     created_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
     updated_at: datetime = Field(
         default_factory=utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False, default=utc_now),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            default=utc_now,
+            server_default=text("now()"),
+        ),
     )
 
     store: "Store" = Relationship(back_populates="store_products")
