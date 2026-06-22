@@ -1,15 +1,18 @@
-.PHONY: install dev test lint format help
+.PHONY: install dev db-up migrate test lint format help
 
 # Variáveis
 PYTHON = python3
 PIP = $(PYTHON) -m pip
 VENV = .venv
 ACTIVATE = . $(VENV)/bin/activate
+DOCKER_COMPOSE = docker compose
 
 help:
 	@echo "Comandos disponíveis:"
 	@echo "  make install  - Instala dependências, cria venv e configura Lefthook"
 	@echo "  make dev      - Sobe o banco (Docker) e inicia o servidor FastAPI"
+	@echo "  make db-up    - Sobe apenas o banco PostgreSQL via Docker Compose"
+	@echo "  make migrate  - Executa migrations Alembic"
 	@echo "  make test     - Executa os testes unitários com Pytest"
 	@echo "  make lint     - Executa o linter Ruff"
 	@echo "  make format   - Executa o formatador Ruff"
@@ -24,8 +27,14 @@ install:
 	fi
 
 dev:
-	docker-compose up -d
+	$(DOCKER_COMPOSE) up -d
 	$(ACTIVATE) && cd backend && uvicorn main:app --reload
+
+db-up:
+	$(DOCKER_COMPOSE) up -d db
+
+migrate:
+	$(ACTIVATE) && cd backend && alembic upgrade head
 
 test:
 	$(ACTIVATE) && cd backend && pytest
