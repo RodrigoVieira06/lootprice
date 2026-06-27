@@ -60,7 +60,8 @@ Leia **nesta ordem**:
    - `ai/backend-developer/SKILL.md` para backend, banco, crawlers, CI ou infra
    - `ai/frontend-developer/SKILL.md` para React, TypeScript, UX ou integração frontend
 2. `AGENTS.md` — contexto completo do projeto
-3. `ai/reviewer/resources/checklist.md` — checklist de conformidade
+3. `docs/affiliate_store_strategy.md` quando o PR tocar lojas, crawlers, preços, links de compra, redirects, métricas ou marketplace
+4. `ai/reviewer/resources/checklist.md` — checklist de conformidade
 
 ### Passo 3.3 — Coletar dados do PR via MCP GitHub
 

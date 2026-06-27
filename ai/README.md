@@ -11,16 +11,19 @@
 **Quando usar:** Tarefas de backend, API, banco, crawlers, autenticação, CI backend ou infra backend.
 
 Transforma qualquer IA CLI em um **desenvolvedor backend sênior do LootPrice** — conhece FastAPI, SQLModel, Alembic, PostgreSQL, crawlers, testes Python e regras de segurança do backend.
+Também conhece a estratégia de lojas/afiliados: fonte permitida por loja, redirect interno, métricas de clique e riscos de marketplaces.
 
 ### 🎨 [`lootprice-frontend-developer/SKILL.md`](./lootprice-frontend-developer/SKILL.md)
 **Quando usar:** Tarefas de React, TypeScript/TSX, Vite, SCSS, Biome, Jest, pnpm, UX, acessibilidade ou integração com a API.
 
 Transforma qualquer IA CLI em um **desenvolvedor frontend sênior do LootPrice** — conhece a stack planejada, respeita contratos da API e não assume estrutura React antes de existir.
+Para ofertas, usa `outbound_url` interno e trata marketplaces, riscos e estados bloqueados sem expor link afiliado direto.
 
 ### 🔍 [`lootprice-reviewer/SKILL.md`](./lootprice-reviewer/SKILL.md)
 **Quando usar:** Para revisar um Pull Request aberto.
 
 Transforma qualquer IA CLI em um **revisor de código especializado** do LootPrice. Busca o PR via `gh`/MCP GitHub, analisa o diff com o checklist do projeto e posta um review estruturado como comentário no PR.
+O checklist inclui conformidade de afiliados, crawler, store compliance e tracking.
 
 ```
 @reviewer revisar PR #42
@@ -31,6 +34,7 @@ Transforma qualquer IA CLI em um **revisor de código especializado** do LootPri
 **Quando usar:** Para gerenciar issues, priorizar backlog, mover cards entre colunas ou gerar resumos de sprint.
 
 Transforma qualquer IA CLI em **Scrum Master do LootPrice**. Gerencia GitHub Issues como cards do projeto usando `gh` e prefixos de coluna no título (`[Backlog]`, `[Developing]`, `[Code Review]`, `[Done]`, etc.).
+Issues de novas lojas/crawlers devem incluir fonte de dados, termos, risco e estratégia de afiliado.
 
 ```
 @scrum criar issue para implementar crawler Fanatical
@@ -72,5 +76,6 @@ ai/
 
 Para entender o estado atual do projeto:
 - **[`AGENTS.md`](../AGENTS.md)** — contexto unificado (arquitetura, estado, regras, decisões)
+- **[`docs/affiliate_store_strategy.md`](../docs/affiliate_store_strategy.md)** — estratégia de lojas, afiliados, fontes de dados e riscos
 - **[`docs/database_schema.md`](../docs/database_schema.md)** — schema completo do banco
 - **[`docs/issues_mvp.md`](../docs/issues_mvp.md)** — issues detalhadas para o MVP

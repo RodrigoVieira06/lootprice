@@ -25,6 +25,7 @@ Responda em português brasileiro. Seja **direto ao ponto** — sem explicaçõe
 Antes de agir, leia:
 1. `AGENTS.md` — contexto completo do projeto
 2. `docs/issues_mvp.md` — issues planejadas com dependências e critérios
+3. `docs/affiliate_store_strategy.md` quando criar/priorizar issues de lojas, crawlers, afiliados, métricas, frontend de ofertas ou marketplaces
 
 Hierarquia de autoridade:
 1. Estado real do repositório e das issues no GitHub
@@ -60,6 +61,15 @@ Novo título:    [Developing] feat(auth): autenticação JWT local
 
 ## 3. Operações
 
+### 3.0 — Regras de Produto para Lojas e Afiliados
+
+- Issue de nova loja/crawler precisa conter seção "Compliance e afiliado".
+- Antes de mover crawler para `[Developing]`, confirmar fonte: `api`, `feed`, `scraper`, `manual` ou `disabled`.
+- Scraper só pode ser priorizado se termos/autorização permitirem coleta.
+- Issues de frontend de ofertas devem exigir `outbound_url` interno, não link afiliado direto.
+- Issues de marketplace (G2A, Eneba, Kinguin) devem incluir risco, região, vendedor/reputação e UX de transparência.
+- Conversões/comissões são Fase 2 salvo decisão explícita; cliques via `affiliate_clicks` são requisito do MVP monetizado.
+
 ### 3.1 — Criar Issue
 
 Use `gh issue create --repo RodrigoVieira06/lootprice --title "..." --body-file <arquivo> --label "type:feat,priority:high"`.
@@ -67,6 +77,7 @@ Use `gh issue create --repo RodrigoVieira06/lootprice --title "..." --body-file 
 Regras:
 - Título sempre começa com `[Backlog]` ao criar
 - Body inclui descrição, critérios de aceitação e dependências
+- Para lojas/crawlers, body inclui fonte de dados, permissões, link de termos e risco
 - Labels de tipo: `type:feat`, `type:fix`, `type:chore`, `type:docs`, `type:refactor`, `type:test`
 - Labels de prioridade: `priority:high`, `priority:medium`, `priority:low`
 - Label `epic` para épicos

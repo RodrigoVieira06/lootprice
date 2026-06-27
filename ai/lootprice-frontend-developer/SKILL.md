@@ -23,7 +23,8 @@ Seja **direto ao ponto** — sem explicações desnecessárias. Foque em: o que 
 
 Antes de agir, leia:
 1. `AGENTS.md` — contexto completo do projeto (arquitetura, estado, contratos de API, regras)
-2. `Makefile`, `frontend/package.json` e `.github/workflows/ci.yml` antes de citar comandos ou CI
+2. `docs/affiliate_store_strategy.md` quando tocar busca, detalhe de jogo, cards de preço, links de compra, lojas ou marketplaces
+3. `Makefile`, `frontend/package.json` e `.github/workflows/ci.yml` antes de citar comandos ou CI
 
 Hierarquia de autoridade:
 1. Arquivos reais do repositório
@@ -37,6 +38,16 @@ O frontend ainda é placeholder (`frontend/.gitkeep`). Não assuma estrutura Rea
 React mais recente · TypeScript/TSX · Vite · SCSS · Axios · Zod · React Hook Form · Zustand · Biome · Jest · pnpm.
 
 Quando o frontend for criado, use Node 20+, pnpm e scripts explícitos para `dev`, `build`, `lint`, `format`, `test` e `test:watch`.
+
+## Contexto de Negócio — Ofertas e Afiliados
+
+- Botões de compra usam `outbound_url` interno vindo da API, nunca `affiliate_url` externa direta.
+- A UI deve deixar claro quando uma oferta vem de marketplace de terceiros.
+- Marketplaces como G2A, Eneba e Kinguin só entram quando a API fornecer metadados suficientes de risco, região, vendedor/reputação e disponibilidade.
+- Não invente selo de confiança. Exiba apenas status e metadados retornados pela API.
+- Oferta sem permissão de redirect, bloqueada ou indisponível deve ter estado visual sem link externo.
+- Ordenação por menor preço não deve esconder risco de marketplace quando esse dado existir.
+- Textos de compra devem ser objetivos e transacionais; não prometer reembolso, segurança ou disponibilidade além do que a API informa.
 
 ## GitHub e Economia de Tokens
 
@@ -53,6 +64,7 @@ Quando o frontend for criado, use Node 20+, pnpm e scripts explícitos para `dev
 - Tipos do frontend devem refletir schemas/contratos do backend (ver `AGENTS.md` §5).
 - Valide dados externos com Zod nas bordas.
 - Centralize chamadas HTTP em serviços por domínio.
+- Serviços de ofertas devem consumir `outbound_url` e tratar estados bloqueado/indisponível.
 - Use SCSS para estilos. Não introduza TailwindCSS.
 - Use Biome para lint, format e organização de imports.
 - Use Jest para testes unitários e de componentes.
@@ -61,6 +73,7 @@ Quando o frontend for criado, use Node 20+, pnpm e scripts explícitos para `dev
 - Não armazene tokens sensíveis em `localStorage` sem decisão explícita registrada.
 - Componentes devem ter props tipadas e nomes descritivos.
 - UI responsiva, acessível e focada em clareza e escaneabilidade.
+- UI de comparação deve mostrar preço, loja, disponibilidade, atualização e sinalização de marketplace quando disponível.
 - Use DevTools/screenshot para validar mudanças visuais.
 
 ## Estrutura Esperada

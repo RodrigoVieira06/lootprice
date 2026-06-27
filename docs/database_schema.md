@@ -1,9 +1,9 @@
 # LootPrice — Database Schema
 
-> **Versão:** 0.2.0-MVP
+> **Versão:** 0.3.0-MVP
 > **Banco:** PostgreSQL 15+
 > **ORM:** SQLModel + Alembic (migrations obrigatórias)
-> **Última atualização:** 2026-06-12
+> **Última atualização:** 2026-06-26
 > **Audiência:** Desenvolvedores e LLMs de apoio
 
 ---
@@ -12,13 +12,18 @@
 
 Este documento define o schema alvo do MVP e reserva pontos de evolução para fases futuras sem criar complexidade antes da hora.
 
-O LootPrice precisa separar três conceitos:
+O LootPrice precisa separar seis conceitos:
 
 1. **Jogo canônico** (`games`): entidade normalizada usada na busca e comparação.
 2. **Produto da loja** (`store_products`): listing específico de uma loja, com `external_id`, URL e título bruto.
 3. **Preço atual** (`prices`): snapshot mais recente de um produto de loja.
+4. **Política da loja** (`stores`): fonte de ingestão permitida, flags de afiliado/compliance e nível de risco.
+5. **Execução de coleta** (`crawler_runs`): observabilidade de ingestão por loja.
+6. **Clique afiliado** (`affiliate_clicks`): métrica interna antes do redirect para a loja.
 
 Essa separação evita gaps comuns: Steam usa `app_id`, Nuuvem depende de URL/slug, marketplaces futuros podem ter múltiplas ofertas para o mesmo jogo, e a normalização automática pode precisar de correção manual.
+
+Detalhes de negócio e risco por loja ficam em `docs/affiliate_store_strategy.md`.
 
 ---
 
@@ -32,6 +37,9 @@ Essa separação evita gaps comuns: Steam usa `app_id`, Nuuvem depende de URL/sl
 | Moeda | `currency CHAR(3)` | MVP usa `BRL`, mas mantém base para expansão |
 | Preço atual | `prices` como snapshot | Histórico fica fora do MVP |
 | Produto por loja | `store_products` | Preserva `external_id`, URL, título bruto e vínculo canônico |
+| Fonte por loja | `stores.ingestion_source` | Evita assumir crawler quando API/feed/manual é o caminho permitido |
+| Afiliado | Redirect interno | Frontend usa `/api/v1/out/{price_id}`; URL externa não deve ser exposta direto |
+| Métricas | `affiliate_clicks` no MVP | Cliques são necessários antes de medir conversão/comissão |
 | Normalização | `games.canonical_name` editável | Corrige edge cases manualmente |
 | Auth social | `oauth_accounts` separado de `users` | Evita acoplar usuário a um único provider |
 | Revogação JWT | `revoked_tokens` | Logout real sem Redis no MVP |
@@ -65,7 +73,10 @@ games  ──(1:N)── store_products
 
 stores ──(1:N)── crawler_runs ──(1:N futuro)── crawler_run_items
 
+prices ──(1:N)── affiliate_clicks
+
 prices ──(1:N futuro)── price_history
+affiliate_clicks ──(1:N futuro)── affiliate_conversions
 ```
 
 ---
@@ -79,6 +90,10 @@ user_role:        'user' | 'admin'
 auth_provider:    'google' | 'discord'
 crawler_status:   'running' | 'success' | 'partial_failure' | 'failed'
 product_platform: 'pc' | 'playstation' | 'xbox' | 'nintendo' | 'mobile'
+ingestion_source: 'api' | 'feed' | 'scraper' | 'manual' | 'disabled'
+store_risk_level: 'low' | 'medium' | 'high'
+store_compliance_status: 'unknown' | 'approved' | 'blocked' | 'needs_review'
+affiliate_conversion_status: 'pending' | 'approved' | 'rejected' | 'paid'
 ```
 
 No MVP, `product_platform` deve ser sempre `pc`.
@@ -178,8 +193,19 @@ Lojas/fontes de dados. Populada via seed, administrável no painel.
 | `slug` | `VARCHAR(100)` | NOT NULL, UNIQUE | `steam`, `nuuvem` |
 | `base_url` | `TEXT` | NOT NULL | URL base |
 | `logo_url` | `TEXT` | NULLABLE | Uso futuro no frontend/admin |
-| `crawler_key` | `VARCHAR(100)` | NULLABLE, UNIQUE | Chave lógica do crawler: `steam`, `nuuvem` |
-| `is_marketplace` | `BOOLEAN` | NOT NULL, DEFAULT `false` | `true` para G2A/Eneba no futuro |
+| `crawler_key` | `VARCHAR(100)` | NULLABLE, UNIQUE | Chave lógica do crawler/importer: `steam`, `nuuvem` |
+| `ingestion_source` | `VARCHAR(30)` | NOT NULL, DEFAULT `'disabled'` | `api`, `feed`, `scraper`, `manual` ou `disabled` |
+| `allows_price_display` | `BOOLEAN` | NOT NULL, DEFAULT `false` | Termos permitem exibir preço no LootPrice |
+| `allows_affiliate_deeplink` | `BOOLEAN` | NOT NULL, DEFAULT `false` | Termos permitem link direto para produto |
+| `allows_tracking_subid` | `BOOLEAN` | NOT NULL, DEFAULT `false` | Programa permite `subid`, `click_id` ou equivalente |
+| `allows_scraping` | `BOOLEAN` | NOT NULL, DEFAULT `false` | Termos/autorização permitem scraper |
+| `affiliate_network` | `VARCHAR(100)` | NULLABLE | Rede/parceiro: direto, Awin, Impact, etc. |
+| `affiliate_link_template` | `TEXT` | NULLABLE | Template seguro para gerar URL afiliada no redirect |
+| `compliance_status` | `VARCHAR(30)` | NOT NULL, DEFAULT `'unknown'` | `unknown`, `approved`, `blocked`, `needs_review` |
+| `risk_level` | `VARCHAR(20)` | NOT NULL, DEFAULT `'medium'` | `low`, `medium` ou `high` |
+| `terms_url` | `TEXT` | NULLABLE | URL dos termos/programa validado |
+| `compliance_notes` | `TEXT` | NULLABLE | Resumo da decisão e limitações |
+| `is_marketplace` | `BOOLEAN` | NOT NULL, DEFAULT `false` | `true` para G2A/Eneba/Kinguin no futuro |
 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `true` | Liga/desliga coleta e exibição |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT `NOW()` | Criação |
 | `updated_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT `NOW()` | Atualização |
@@ -188,15 +214,72 @@ Lojas/fontes de dados. Populada via seed, administrável no painel.
 CREATE UNIQUE INDEX uq_stores_slug ON stores (slug);
 CREATE UNIQUE INDEX uq_stores_crawler_key ON stores (crawler_key)
   WHERE crawler_key IS NOT NULL;
+
+ALTER TABLE stores
+  ADD CONSTRAINT chk_stores_ingestion_source
+  CHECK (ingestion_source IN ('api', 'feed', 'scraper', 'manual', 'disabled'));
+
+ALTER TABLE stores
+  ADD CONSTRAINT chk_stores_compliance_status
+  CHECK (compliance_status IN ('unknown', 'approved', 'blocked', 'needs_review'));
+
+ALTER TABLE stores
+  ADD CONSTRAINT chk_stores_risk_level
+  CHECK (risk_level IN ('low', 'medium', 'high'));
+
+CREATE INDEX idx_stores_ingestion_source ON stores (ingestion_source);
+CREATE INDEX idx_stores_compliance_status ON stores (compliance_status);
+CREATE INDEX idx_stores_risk_level ON stores (risk_level);
 ```
 
 **Seed MVP:**
 
 ```sql
-INSERT INTO stores (name, slug, base_url, crawler_key, is_marketplace) VALUES
-  ('Steam',  'steam',  'https://store.steampowered.com', 'steam',  false),
-  ('Nuuvem', 'nuuvem', 'https://www.nuuvem.com',          'nuuvem', false);
+INSERT INTO stores (
+  name,
+  slug,
+  base_url,
+  crawler_key,
+  ingestion_source,
+  allows_price_display,
+  allows_affiliate_deeplink,
+  allows_tracking_subid,
+  allows_scraping,
+  compliance_status,
+  risk_level,
+  is_marketplace
+) VALUES
+  (
+    'Steam',
+    'steam',
+    'https://store.steampowered.com',
+    'steam',
+    'api',
+    true,
+    false,
+    false,
+    false,
+    'needs_review',
+    'medium',
+    false
+  ),
+  (
+    'Nuuvem',
+    'nuuvem',
+    'https://www.nuuvem.com',
+    'nuuvem',
+    'disabled',
+    false,
+    false,
+    false,
+    false,
+    'needs_review',
+    'medium',
+    false
+  );
 ```
+
+**Regra de compliance:** `ingestion_source = 'scraper'` só pode ser usado se `allows_scraping = true` e `compliance_status = 'approved'`. Para `feed` ou `api`, registrar `terms_url` e limitações em `compliance_notes`.
 
 ---
 
@@ -282,7 +365,7 @@ Snapshot atual do preço de um produto de loja.
 | `original_price_brl` | `NUMERIC(10,2)` | NULLABLE | Preço sem desconto |
 | `discount_percent` | `INTEGER` | NULLABLE | 0–100 |
 | `currency` | `CHAR(3)` | NOT NULL, DEFAULT `'BRL'` | Moeda |
-| `affiliate_url` | `TEXT` | NOT NULL | URL final de compra/afiliado |
+| `affiliate_url` | `TEXT` | NOT NULL | Campo legado/compatibilidade; frontend deve preferir redirect interno |
 | `is_available` | `BOOLEAN` | NOT NULL, DEFAULT `true` | Disponibilidade no momento da coleta |
 | `scraped_at` | `TIMESTAMPTZ` | NOT NULL | Momento da coleta |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT `NOW()` | Criação |
@@ -302,7 +385,9 @@ CREATE INDEX idx_prices_price_brl ON prices (price_brl);
 CREATE INDEX idx_prices_scraped_at ON prices (scraped_at);
 ```
 
-**Regra central:** crawler deve fazer `UPSERT` por `store_product_id`. Histórico não é inserido no MVP.
+**Regra central:** crawler/importer deve fazer `UPSERT` por `store_product_id`. Histórico não é inserido no MVP.
+
+**Regra de afiliado:** a API pública não deve expor `affiliate_url` externa como link primário. O frontend deve receber um `outbound_url` interno apontando para `/api/v1/out/{price_id}`.
 
 ---
 
@@ -335,6 +420,49 @@ CREATE INDEX idx_crawler_runs_status ON crawler_runs (status);
 
 ---
 
+### `affiliate_clicks`
+
+Cliques de saída para lojas. Entra no MVP monetizado para medir CTR, intenção de compra e permitir reconciliação futura de conversões.
+
+| Coluna | Tipo | Restrições | Descrição |
+|---|---|---|---|
+| `id` | `UUID` | PK, DEFAULT `gen_random_uuid()` | Identificador interno |
+| `click_id` | `UUID` | NOT NULL, UNIQUE | ID enviado como `subid`/tracking quando permitido |
+| `store_id` | `UUID` | NOT NULL, FK `stores.id` ON DELETE CASCADE | Loja destino |
+| `store_product_id` | `UUID` | NOT NULL, FK `store_products.id` ON DELETE CASCADE | Produto clicado |
+| `price_id` | `UUID` | NULLABLE, FK `prices.id` ON DELETE SET NULL | Snapshot de preço usado no clique |
+| `game_id` | `UUID` | NOT NULL, FK `games.id` ON DELETE CASCADE | Jogo canônico |
+| `user_id` | `UUID` | NULLABLE, FK `users.id` ON DELETE SET NULL | Usuário autenticado, se existir |
+| `session_id` | `VARCHAR(120)` | NULLABLE | Identificador anônimo de sessão, sem dado sensível |
+| `placement` | `VARCHAR(80)` | NOT NULL | Origem visual: `search_result`, `game_detail`, `price_card`, etc. |
+| `position` | `INTEGER` | NULLABLE | Posição da oferta na lista no momento do clique |
+| `price_brl` | `NUMERIC(10,2)` | NOT NULL | Preço exibido quando o usuário clicou |
+| `destination_url` | `TEXT` | NOT NULL | URL final gerada para redirect |
+| `referrer` | `TEXT` | NULLABLE | Header ou rota anterior, se seguro armazenar |
+| `user_agent` | `TEXT` | NULLABLE | User-Agent para análise agregada |
+| `ip_hash` | `VARCHAR(128)` | NULLABLE | Hash do IP; não armazenar IP bruto sem decisão explícita |
+| `clicked_at` | `TIMESTAMPTZ` | NOT NULL, DEFAULT `NOW()` | Momento do clique |
+
+```sql
+CREATE UNIQUE INDEX uq_affiliate_clicks_click_id
+  ON affiliate_clicks (click_id);
+
+CREATE INDEX idx_affiliate_clicks_store_clicked
+  ON affiliate_clicks (store_id, clicked_at DESC);
+
+CREATE INDEX idx_affiliate_clicks_game_clicked
+  ON affiliate_clicks (game_id, clicked_at DESC);
+
+CREATE INDEX idx_affiliate_clicks_product_clicked
+  ON affiliate_clicks (store_product_id, clicked_at DESC);
+```
+
+**Regra de privacidade:** `ip_hash` deve ser hash irreversível com salt de ambiente. Não gravar IP bruto, token afiliado secreto ou dados pessoais desnecessários.
+
+**Regra de redirect:** se `stores.compliance_status != 'approved'`, `stores.is_active = false`, `prices.is_available = false` ou a loja não permitir deep link, `/api/v1/out/{price_id}` deve retornar erro controlado em vez de redirecionar.
+
+---
+
 ## Queries Esperadas no MVP
 
 ### Busca de jogos com menor preço
@@ -348,9 +476,13 @@ SELECT
   MIN(p.price_brl) AS best_price_brl
 FROM games g
 JOIN store_products sp ON sp.game_id = g.id
+JOIN stores s ON s.id = sp.store_id
 JOIN prices p ON p.store_product_id = sp.id
 WHERE g.is_active = true
   AND p.is_available = true
+  AND s.is_active = true
+  AND s.compliance_status = 'approved'
+  AND s.allows_price_display = true
   AND g.canonical_name ILIKE '%' || :query || '%'
 GROUP BY g.id
 ORDER BY best_price_brl ASC;
@@ -366,7 +498,7 @@ SELECT
   p.price_brl,
   p.original_price_brl,
   p.discount_percent,
-  p.affiliate_url,
+  '/api/v1/out/' || p.id::text AS outbound_url,
   p.scraped_at
 FROM games g
 JOIN store_products sp ON sp.game_id = g.id
@@ -375,7 +507,23 @@ JOIN prices p ON p.store_product_id = sp.id
 WHERE g.slug = :slug
   AND s.is_active = true
   AND p.is_available = true
+  AND s.compliance_status = 'approved'
+  AND s.allows_price_display = true
 ORDER BY p.price_brl ASC;
+```
+
+### Cliques por loja nos últimos 7 dias
+
+```sql
+SELECT
+  s.slug,
+  s.name,
+  COUNT(ac.id) AS clicks
+FROM affiliate_clicks ac
+JOIN stores s ON s.id = ac.store_id
+WHERE ac.clicked_at >= NOW() - INTERVAL '7 days'
+GROUP BY s.id
+ORDER BY clicks DESC;
 ```
 
 ---
@@ -394,6 +542,7 @@ Migration inicial recomendada:
 7. store_products
 8. prices
 9. crawler_runs
+10. affiliate_clicks
 ```
 
 Comando real deve ser confirmado no `Makefile`. Enquanto `make migrate-create` não existir:
@@ -509,6 +658,24 @@ CREATE TABLE price_history (
 );
 ```
 
+#### `affiliate_conversions`
+
+Conversões/comissões reportadas por rede de afiliados, postback ou importação CSV. Fica fora do MVP porque depende do suporte de cada parceiro.
+
+```sql
+CREATE TABLE affiliate_conversions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  click_id UUID REFERENCES affiliate_clicks(click_id) ON DELETE SET NULL,
+  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  external_order_id_hash VARCHAR(128),
+  commission_brl NUMERIC(10,2),
+  order_value_brl NUMERIC(10,2),
+  status VARCHAR(30) NOT NULL,
+  converted_at TIMESTAMPTZ,
+  reported_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
 #### `api_keys`
 
 Autenticação para API pública futura.
@@ -527,12 +694,13 @@ CREATE TABLE api_keys (
 
 #### Marketplaces cinzas
 
-G2A/Eneba podem exigir campos adicionais em `store_products` ou tabela específica de ofertas:
+G2A/Eneba/Kinguin podem exigir campos adicionais em `store_products` ou tabela específica de ofertas:
 
 - vendedor/merchant
 - reputação do vendedor
 - região de ativação
 - risco/observações de marketplace
+- região de ativação
 - múltiplas ofertas para o mesmo `game_id` e `store_id`
 
 Não modelar agora. A tabela `store_products` já reduz o custo da futura adaptação.
@@ -544,9 +712,10 @@ Não modelar agora. A tabela `store_products` já reduz o custo da futura adapta
 - `price_history`
 - `wishlists`
 - alertas de preço
+- `affiliate_conversions`
 - API keys públicas
 - suporte a consoles
-- G2A/Eneba
+- G2A/Eneba/Kinguin
 - dados extensos de catálogo como gêneros, publishers, requisitos mínimos e tags
 
 ---

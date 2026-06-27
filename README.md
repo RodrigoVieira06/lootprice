@@ -7,14 +7,14 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green.svg)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-O LootPrice realiza scraping e consome APIs de múltiplas lojas, normaliza os dados e exibe em uma interface única onde cada jogo está mais barato.
+O LootPrice realiza scraping, consome APIs ou importa feeds de múltiplas lojas, normaliza os dados e exibe em uma interface única onde cada jogo está mais barato. A monetização por afiliados é feita via redirect interno com métricas, não por links externos expostos diretamente no frontend.
 
 ---
 
 ## Arquitetura
 
 ```
-[ Nuuvem Scraper ]  [ Steam API ]
+[ Nuuvem Feed/Scraper ]  [ Steam API ]  [ Lojas Futuras ]
          │                │
          └────────┬────────┘
                   ▼
@@ -26,11 +26,28 @@ O LootPrice realiza scraping e consome APIs de múltiplas lojas, normaliza os da
                   ▼
            [ FastAPI REST ]
                   │
+                  ├── [ Affiliate Redirect + Click Metrics ]
+                  │
                   ▼
           [ React SPA (MVP) ]
 ```
 
 Documentação completa para IA: [`AGENTS.md`](AGENTS.md)
+Estratégia de lojas, afiliados e riscos: [`docs/affiliate_store_strategy.md`](docs/affiliate_store_strategy.md)
+
+---
+
+## Afiliados e Fontes de Dados
+
+O projeto não assume "crawler por padrão". Cada loja deve declarar:
+
+- fonte permitida: `api`, `feed`, `scraper`, `manual` ou `disabled`;
+- permissão para exibir preço;
+- permissão para deep link afiliado;
+- suporte a `subid`/`click_id` para tracking;
+- status de compliance e nível de risco.
+
+Todo botão de compra deve usar um endpoint interno de saída, como `/api/v1/out/{price_id}`, para registrar clique e só então redirecionar para a loja. Marketplaces de keys como G2A, Eneba e Kinguin ficam fora do MVP inicial até existirem campos, UX e regras claras para risco, região e vendedor.
 
 ---
 
@@ -174,9 +191,10 @@ O contexto unificado para IA está em [`AGENTS.md`](AGENTS.md).
 | Fase | Status | Escopo |
 |---|---|---|
 | Fase 1 — MVP | 🔄 Em andamento | Backend, crawlers Steam + Nuuvem, auth (local + OAuth), revogação de tokens, API REST, rate limiting, Nginx |
-| Fase 1.5 — Frontend | ⏳ Planejado | React SPA: busca, detalhe de jogo, login/registro |
+| Fase 1 — Afiliados | ⏳ Planejado | Store compliance, outbound redirect, métricas de clique e validação de programas de afiliado |
+| Fase 1.5 — Frontend | ⏳ Planejado | React SPA: busca, detalhe de jogo, login/registro usando `outbound_url` interno |
 | Fase 2 — Expansão | ⏳ Planejado | Admin panel, mais lojas (GOG, GMG), wishlist, alertas |
-| Fase 3 — Escala | ⏳ Planejado | Histórico de preços, alertas, G2A/Eneba, consoles |
+| Fase 3 — Escala | ⏳ Planejado | Histórico de preços, alertas, G2A/Eneba/Kinguin, consoles |
 
 ---
 

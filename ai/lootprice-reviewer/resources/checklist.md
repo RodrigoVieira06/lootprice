@@ -51,6 +51,21 @@
 
 ---
 
+## 💰 Afiliados, Lojas e Crawler
+
+| # | Regra | Como verificar |
+|---|---|---|
+| A-01 | Nova loja/crawler tem fonte permitida documentada | Checar `docs/affiliate_store_strategy.md`, issue e campos `ingestion_source` |
+| A-02 | Scraper só roda com permissão explícita | Verificar `allows_scraping = true` e `compliance_status = approved` antes de executar |
+| A-03 | Crawler coleta `store_url` limpa e não hardcoda link afiliado | Procurar templates/parâmetros afiliados dentro de crawlers |
+| A-04 | API pública retorna `outbound_url` interno | Verificar schemas/responses de preço; não expor `affiliate_url` como link primário |
+| A-05 | Redirect registra clique e valida permissões | Conferir `/out/{price_id}`: loja/produto/preço ativo, compliance, rate limit e `affiliate_clicks` |
+| A-06 | Métricas não gravam IP bruto nem segredo afiliado | Procurar persistência de IP/token/template sensível |
+| A-07 | Marketplace tem sinalização e metadados de risco | Para G2A/Eneba/Kinguin, checar `is_marketplace`, região/vendedor/reputação quando aplicável |
+| A-08 | Frontend usa `outbound_url` e trata oferta bloqueada | Buscar `<a href={affiliate_url}>` ou links externos diretos em cards de preço |
+
+---
+
 ## 📝 Geral
 
 | # | Regra | Como verificar |

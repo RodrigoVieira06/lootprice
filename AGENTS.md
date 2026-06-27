@@ -2,7 +2,7 @@
 
 > **Versão:** 0.3.0-MVP
 > **Status:** Desenvolvimento Ativo
-> **Última atualização:** 2026-06-18
+> **Última atualização:** 2026-06-26
 > **Audiência:** LLMs de apoio (Antigravity IDE, Claude Code, Gemini CLI, Cursor, Copilot)
 > **Documentação humana:** `README.md`
 
@@ -38,12 +38,14 @@
 
 ## 1. Visão Geral do Produto
 
-**LootPrice** é um agregador e comparador de preços de chaves de jogos digitais. O sistema realiza scraping automatizado de múltiplas lojas, normaliza os dados coletados e expõe uma interface onde o usuário final encontra onde o jogo está mais barato.
+**LootPrice** é um agregador e comparador de preços de chaves de jogos digitais. O sistema coleta dados por API, feed, scraper permitido ou cadastro manual, normaliza os dados e expõe uma interface onde o usuário final encontra onde o jogo está mais barato.
+
+A monetização por afiliados é feita por redirect interno com métricas de clique. Programa de afiliados não substitui crawler/feed/API; ele resolve atribuição comercial do clique.
 
 ### Proposta de Valor
 
 ```
-Usuário busca jogo → LootPrice consulta N lojas → Resultado: lista ordenada do menor ao maior preço
+Usuário busca jogo → LootPrice consulta N lojas permitidas → Resultado: lista ordenada do menor ao maior preço → Clique medido via redirect afiliado
 ```
 
 ### Personas
@@ -67,9 +69,10 @@ Usuário busca jogo → LootPrice consulta N lojas → Resultado: lista ordenada
 | Perfis | RBAC com roles `user` e `admin` |
 | Backend | API REST: busca, listagem, comparação de preços, gestão de usuários |
 | Frontend | SPA: busca de jogos, comparação de preços, autenticação |
+| Afiliados | Store compliance, outbound redirect, métricas de clique |
 | Tooling | Conventional Commits, Lefthook, Ruff, Pytest, Alembic |
 
-**Fora de Escopo (Fases Futuras):** Wishlist, alertas de preço, histórico de preços, G2A/Eneba, consoles, customização avançada.
+**Fora de Escopo (Fases Futuras):** Wishlist, alertas de preço, histórico de preços, conversões de afiliado, G2A/Eneba/Kinguin, consoles, customização avançada.
 
 ---
 
@@ -158,6 +161,7 @@ lootprice/                          # Raiz do Monorepo
 │
 ├── docs/
 │   ├── database_schema.md          # Modelagem detalhada do banco
+│   ├── affiliate_store_strategy.md # Estratégia de lojas, afiliados e riscos
 │   └── issues_mvp.md              # Issues detalhadas para o MVP
 │
 ├── backend/
@@ -248,13 +252,17 @@ users ──(1:N)── oauth_accounts
 stores ──(1:N)── store_products ──(1:1)── prices
 games  ──(1:N)── store_products
 stores ──(1:N)── crawler_runs
+prices ──(1:N)── affiliate_clicks
 ```
 
 ### Decisões de Design
 
 - `canonical_name` editável pelo admin para corrigir falsos negativos
 - `store_products` separa jogo canônico do produto específico de cada loja
+- `stores` registra fonte permitida: `api`, `feed`, `scraper`, `manual` ou `disabled`
 - `prices` guarda apenas o **preço atual** no MVP. Histórico na Fase 3
+- `affiliate_clicks` registra cliques antes do redirect externo
+- Frontend usa `outbound_url` interno; não expõe URL afiliada externa como link primário
 - `price_brl` em `NUMERIC(10,2)`, nunca `FLOAT`
 - `scraped_at` permite exibir "Atualizado há X minutos"
 - `revoked_tokens` usa campo `jti` para blacklist eficiente sem Redis
@@ -271,6 +279,7 @@ stores ──(1:N)── crawler_runs
 | GET | `/games` | Não | Lista jogos com paginação |
 | GET | `/games/{slug}` | Não | Detalhe com todos os preços |
 | GET | `/prices?game_id={id}` | Não | Preços de um jogo específico |
+| GET | `/out/{price_id}` | Não | Registra clique afiliado e redireciona para a loja |
 | POST | `/auth/register` | Não | Cadastro local |
 | POST | `/auth/login` | Não | Login local — retorna JWT |
 | POST | `/auth/refresh` | JWT | Renova access token |
@@ -280,8 +289,10 @@ stores ──(1:N)── crawler_runs
 | GET | `/auth/discord` | Não | Inicia OAuth Discord |
 | POST | `/admin/crawl` | JWT (admin) | Força execução dos crawlers |
 | GET | `/admin/stores` | JWT (admin) | Lista lojas |
-| PATCH | `/admin/stores/{id}` | JWT (admin) | Ativa/desativa loja |
+| PATCH | `/admin/stores/{id}` | JWT (admin) | Ativa/desativa loja e gerencia compliance/fonte |
 | PATCH | `/admin/games/{id}` | JWT (admin) | Edita canonical_name |
+
+**Regra de afiliado:** endpoints públicos devem filtrar lojas sem `compliance_status = approved`, sem `allows_price_display` ou inativas. O frontend usa `outbound_url`; `affiliate_url` externa não deve ser o link primário.
 
 ### Exemplo — `GET /games/{slug}`
 
@@ -298,7 +309,8 @@ stores ──(1:N)── crawler_runs
       "price_brl": 49.90,
       "original_price_brl": 199.90,
       "discount_percent": 75,
-      "url": "https://nuuvem.com/...",
+      "outbound_url": "/api/v1/out/550e8400-e29b-41d4-a716-446655440001",
+      "is_marketplace": false,
       "is_available": true,
       "scraped_at": "2026-05-31T14:00:00Z"
     }
@@ -365,10 +377,10 @@ VITE_API_URL=http://localhost:8000/api/v1
 class RawGameData(BaseModel):
     title: str
     external_id: str | None = None
-    store_url: str
+    store_url: str                   # URL limpa/canônica do produto
     price_brl: Decimal              # Nunca float
     original_price_brl: Decimal | None = None
-    affiliate_url: str
+    affiliate_url: str | None = None # Legado/opcional; preferir redirect interno
     is_available: bool = True
     store_slug: str
 
@@ -380,11 +392,15 @@ class BaseCrawler(ABC):
 
 ### Adicionando um Novo Crawler
 
-1. Criar `backend/app/crawlers/{loja}.py`
-2. Herdar de `BaseCrawler`, definir `store_slug`
-3. Implementar `fetch()` com HTTPX async + `RawGameData`
-4. Registrar no `runner.py`
-5. Escrever teste em `tests/test_crawlers/test_{loja}.py`
+1. Ler `docs/affiliate_store_strategy.md`
+2. Validar e registrar fonte da loja: `api`, `feed`, `scraper`, `manual` ou `disabled`
+3. Criar `backend/app/crawlers/{loja}.py` apenas se `scraper` for permitido
+4. Herdar de `BaseCrawler`, definir `store_slug`
+5. Implementar `fetch()` com HTTPX async + `RawGameData`
+6. Registrar no `runner.py`
+7. Escrever teste em `tests/test_crawlers/test_{loja}.py`
+
+**Regra:** se termos não permitirem scraping, use feed/API/importador ou deixe a loja como `disabled`. Crawler não gera tracking comercial; tracking acontece no endpoint `/api/v1/out/{price_id}`.
 
 ### Critérios de Saúde
 
@@ -629,8 +645,8 @@ commit-msg:
 | Campo | Valor |
 |---|---|
 | **Versão** | 0.3.0 |
-| **Última atualização** | 2026-06-22 |
-| **Fase atual** | Desenvolvimento — Models core de catálogo |
+| **Última atualização** | 2026-06-26 |
+| **Fase atual** | Desenvolvimento — Arquitetura de afiliados, store compliance e models core |
 
 ### Estrutura de Arquivos Atual
 
@@ -646,6 +662,7 @@ lootprice/
 │   ├── lootprice-reviewer/SKILL.md            ✅
 │   └── lootprice-scrum-master/SKILL.md        ✅
 ├── docs/
+│   ├── affiliate_store_strategy.md   ✅
 │   ├── database_schema.md            ✅
 │   └── issues_mvp.md                 ✅
 ├── backend/
@@ -699,7 +716,10 @@ lootprice/
 | 2026-06 | Makefile usa `docker compose` | Ambiente local usa Docker Compose v2 |
 | 2026-06 | Models core de catálogo criados antes das rotas | `stores`, `games`, `store_products` e `prices` sustentam busca e comparação |
 | 2026-06 | Skills usam `gh` para escrita no GitHub | Evitar bloqueios `403 Resource not accessible by integration` do MCP e reduzir retrabalho |
-| 2026-06 | Models core de catálogo criados antes das rotas | `stores`, `games`, `store_products` e `prices` sustentam busca e comparação |
+| 2026-06 | Programa de afiliados não substitui fonte de dados | Afiliado monetiza clique; API/feed/scraper/manual alimenta catálogo e preço |
+| 2026-06 | Toda loja exige política de ingestão e compliance | Evitar crawler proibido por termos e reduzir risco de bloqueio/legal |
+| 2026-06 | Cliques de compra passam por redirect interno | Permite métricas, `click_id/subid`, bloqueio de lojas inválidas e privacidade controlada |
+| 2026-06 | Marketplaces de keys ficam fora do MVP inicial | G2A/Eneba/Kinguin exigem UX de risco, região, vendedor e reputação |
 
 ### Débitos Técnicos
 
@@ -709,6 +729,8 @@ lootprice/
 | DT-02 | `python-jose` com manutenção irregular | Monitorar |
 | DT-03 | Sem validação de IPs Cloudflare no `X-Forwarded-For` | Aberto |
 | DT-04 | Nginx + CF-Connecting-IP bloqueado sem domínio | Bloqueado |
+| DT-05 | Termos/afiliado das lojas ainda pendentes de validação formal | Aberto — antes de novos crawlers |
+| DT-06 | Conversões de afiliado dependem de postback/API/CSV por parceiro | Aberto — Fase 2 |
 
 ---
 
@@ -719,9 +741,11 @@ lootprice/
 - Setup do repositório, Docker, Makefile, Lefthook
 - Pipeline CI com GitHub Actions
 - Models + migrations Alembic
-- Crawlers: Steam API + Nuuvem scraper
+- Fontes iniciais: Steam API + Nuuvem a validar entre feed/API/scraper
+- Store compliance: `api`, `feed`, `scraper`, `manual`, `disabled`
 - Normalização de nomes e slugs
 - API REST: busca, listagem, detalhe, admin
+- Outbound redirect afiliado + métricas de clique
 - Autenticação: JWT local + Google + Discord + revogação
 - RBAC: roles user/admin
 - Rate limiting com slowapi
@@ -731,13 +755,14 @@ lootprice/
 - Setup React SPA: Vite + TSX + SCSS + Zustand + Biome + Jest + pnpm
 - Página de busca e listagem
 - Páginas de login e registro
-- Página de detalhe com comparação de preços
+- Página de detalhe com comparação de preços e `outbound_url` interno
 
 ### Fase 2 — Expansão
 
-- Crawlers: GOG, Humble Bundle, Green Man Gaming
+- Novas lojas autorizadas: GOG, Humble Bundle, Green Man Gaming, Fanatical após validação
 - Admin panel
 - Agendamento automático de crawlers
+- Conversões de afiliado via postback/API/CSV quando disponível
 - Wishlist e favoritos
 - Limpeza de `revoked_tokens` (DT-01)
 
@@ -746,7 +771,7 @@ lootprice/
 - Histórico de preços e gráficos
 - Alertas de preço
 - Suporte a consoles
-- G2A/Eneba (experimental)
+- G2A/Eneba/Kinguin (experimental, com UX de marketplace)
 - API pública com API Key
 
 ---
@@ -756,6 +781,9 @@ lootprice/
 | Risco | Probabilidade | Impacto | Mitigação |
 |---|---|---|---|
 | Crawler quebra por mudança de HTML | Alta | Alto | Health checks + testes de contrato + fallback |
+| Termos não permitem scraping/comparação | Média | Crítico | Validar `docs/affiliate_store_strategy.md` antes de implementar loja |
+| Afiliado sem `subid/click_id` | Média | Médio | Registrar clique interno e tratar conversão como não reconciliável |
+| Marketplace com key problemática | Média | Alto | Adiar G2A/Eneba/Kinguin até UX de risco, região e vendedor |
 | Normalização cria duplicatas | Média | Médio | `canonical_name` editável |
 | Vazamento de credenciais | Baixa | Crítico | `.env` no gitignore, Secret Scanning |
 | Bloqueio de IP por scraping | Média | Alto | Rate limiting, User-Agent rotation, robots.txt |
@@ -771,6 +799,10 @@ lootprice/
 | **Canonical Name** | Nome normalizado de um jogo para deduplicação |
 | **Crawler** | Script que extrai dados de lojas externas |
 | **DTO** | Schema Pydantic sem `Table=True` para I/O da API |
+| **Feed** | Arquivo/API oficial de produtos fornecido por loja ou rede de afiliados |
+| **Ingestion Source** | Fonte permitida de dados da loja: `api`, `feed`, `scraper`, `manual`, `disabled` |
+| **Outbound Redirect** | Endpoint interno que registra clique e redireciona para a loja |
+| **SubID / Click ID** | Identificador enviado ao afiliado para reconciliar clique e conversão |
 | **Upsert** | Insert se não existe, update se já existe |
 | **MCP** | Model Context Protocol — LLMs chamam ferramentas externas |
 | **RBAC** | Role-Based Access Control |
@@ -789,7 +821,8 @@ Seja **direto ao ponto**. Respostas objetivas, sem explicações desnecessárias
 
 1. Leia este arquivo (`AGENTS.md`)
 2. Leia a skill relevante: `ai/lootprice-backend-developer/SKILL.md`, `ai/lootprice-frontend-developer/SKILL.md`, ou `ai/lootprice-scrum-master/SKILL.md`
-3. Verifique o estado real do repositório (árvore de arquivos, Makefile, CI)
+3. Leia `docs/affiliate_store_strategy.md` ao tocar lojas, crawlers, preços, frontend de ofertas, redirects ou issues de novas lojas
+4. Verifique o estado real do repositório (árvore de arquivos, Makefile, CI)
 
 ### Regras Invioláveis
 
@@ -799,6 +832,9 @@ Seja **direto ao ponto**. Respostas objetivas, sem explicações desnecessárias
 - **Nunca commite sem branch** — `git checkout -b <prefixo>/<descricao>` primeiro
 - **Sempre use Conventional Commits**
 - **Atualize `AGENTS.md` §15** ao criar/remover arquivos, concluir issues ou tomar decisões técnicas
+- **Nunca crie crawler de loja nova sem registrar fonte permitida e compliance**
+- **Nunca exponha link afiliado externo direto no frontend quando existir `outbound_url` interno**
+- **Nunca misture marketplace de keys com loja autorizada sem sinalização explícita**
 
 ### Hierarquia de Autoridade
 

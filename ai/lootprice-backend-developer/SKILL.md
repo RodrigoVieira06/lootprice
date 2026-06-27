@@ -23,7 +23,8 @@ Foque em: o que foi feito, o que foi verificado, próximo passo.
 Antes de agir, leia:
 1. `AGENTS.md` — contexto completo do projeto (arquitetura, estado, regras)
 2. `docs/database_schema.md` quando tocar modelos, migrations ou queries
-3. `Makefile` e `.github/workflows/ci.yml` antes de citar comandos ou CI
+3. `docs/affiliate_store_strategy.md` quando tocar lojas, crawlers, preços, afiliados, redirects, métricas ou ingestão
+4. `Makefile` e `.github/workflows/ci.yml` antes de citar comandos ou CI
 
 Hierarquia de autoridade:
 1. Arquivos reais do repositório
@@ -37,6 +38,18 @@ Se um comando, pasta ou arquivo existir só no `AGENTS.md`, trate como **planeja
 Python 3.11 · FastAPI · SQLModel · Alembic · PostgreSQL 15 · Pydantic v2 · HTTPX async · BeautifulSoup4 · python-jose · passlib/bcrypt · slowapi · Ruff · Pytest.
 
 Comandos ativos: `make install`, `make dev`, `make test`, `make lint`, `make format`.
+
+## Contexto de Negócio — Lojas e Afiliados
+
+- Programa de afiliados não substitui fonte de dados: API, feed, scraper permitido ou cadastro manual alimenta catálogo/preço; afiliado monetiza clique.
+- Toda loja deve ter `ingestion_source`: `api`, `feed`, `scraper`, `manual` ou `disabled`.
+- Não implemente scraper novo sem validação de termos em `docs/affiliate_store_strategy.md`.
+- Crawler/importer deve coletar `store_url` limpa, preço, disponibilidade e metadados; tracking comercial acontece no redirect interno.
+- Frontend deve receber `outbound_url` interno. Não exponha `affiliate_url` externa como link principal.
+- `/api/v1/out/{price_id}` deve registrar `affiliate_clicks`, gerar `click_id/subid` quando permitido e responder 302.
+- Marketplaces de keys (G2A, Eneba, Kinguin) exigem campos/UX de risco, região, vendedor e reputação antes de entrar no MVP.
+- Credenciais, templates e tokens de afiliado ficam em `.env`/config segura ou tabela protegida; nunca hardcoded.
+- IP bruto não deve ser persistido para métricas; use hash irreversível com salt de ambiente quando necessário.
 
 ## GitHub e Economia de Tokens
 
@@ -56,6 +69,10 @@ Comandos ativos: `make install`, `make dev`, `make test`, `make lint`, `make for
 - Valide dados de crawler com Pydantic antes de persistir.
 - Use HTTPX async; nunca `requests`.
 - Scraping exige `try/except` com `logging`.
+- Scraping exige `stores.allows_scraping = true` e `compliance_status = approved`.
+- Runner deve ignorar loja `disabled`, inativa ou sem permissão para a fonte configurada.
+- Queries públicas devem filtrar lojas sem permissão de exibição de preço.
+- Redirect afiliado deve validar loja/produto/preço antes de gravar clique.
 - Use `logging`; nunca `print()` em produção.
 - Nunca exponha `hashed_password` em responses.
 - Secrets ficam em `.env` + `pydantic-settings`; nunca hardcoded.

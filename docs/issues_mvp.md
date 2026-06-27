@@ -1,6 +1,6 @@
 # LootPrice — Issues do MVP
 
-> **Última atualização:** 2026-06-17
+> **Última atualização:** 2026-06-26
 > **Audiência:** Desenvolvedores, Scrum Master IA, LLMs de apoio
 > **Gestão:** GitHub Issues no repositório `RodrigoVieira06/lootprice`
 
@@ -32,6 +32,7 @@ Este documento define **todas as issues** necessárias para entregar o MVP do Lo
 | E6 | Segurança & Rate Limiting | Fase 1 | slowapi, headers, proteção |
 | E7 | Frontend MVP | Fase 1.5 | React SPA, páginas, auth UI |
 | E8 | Infra de Deploy | Fase 1 | Nginx, Cloudflare Tunnel |
+| E9 | Afiliados & Store Compliance | Fase 1 | Estratégia de lojas, permissões de ingestão, tracking de cliques e redirect afiliado |
 
 ---
 
@@ -149,10 +150,11 @@ Criar models SQLModel para `stores`, `games`, `store_products` e `prices` confor
 - [ ] `backend/app/models/game.py` — model `Game`
 - [ ] `backend/app/models/store_product.py` — model `StoreProduct`
 - [ ] `backend/app/models/price.py` — model `Price`
+- [ ] `Store` inclui política de ingestão: `ingestion_source`, permissões de preço/afiliado/scraping, `compliance_status`, `risk_level`, `terms_url`, `compliance_notes`
 - [ ] Todos os campos monetários usam `Decimal` + `NUMERIC(10,2)`
 - [ ] Migration Alembic gerada e aplicada
 - [ ] Constraints e índices conforme schema
-- [ ] Seed de stores (Steam + Nuuvem) via migration ou script
+- [ ] Seed de stores (Steam + Nuuvem) via migration ou script com status inicial `needs_review`
 - [ ] Testes unitários para validação dos models
 
 ---
@@ -196,7 +198,7 @@ Criar models de autenticação: `users`, `oauth_accounts` e `revoked_tokens`.
 | **Título** | `#6 feat(database): model crawler_runs` |
 | **Labels** | `type:feat`, `priority:medium` |
 | **Milestone** | Fase 1 - MVP Backend |
-| **Dependências** | ISSUE-04 |
+| **Dependências** | ISSUE-04, ISSUE-24 |
 | **Estimativa** | S |
 
 **Descrição:**
@@ -341,8 +343,10 @@ Crawler que consulta a API pública da Steam e retorna dados no formato `RawGame
 **Critérios de Aceitação:**
 - [ ] `backend/app/crawlers/steam.py` herda de `BaseCrawler`
 - [ ] `store_slug = "steam"`
-- [ ] Usa HTTPX async
+- [ ] Usa HTTPX async e fonte/API permitida documentada em `docs/affiliate_store_strategy.md`
+- [ ] Steam não é tratada como fonte principal de monetização afiliada sem validação formal
 - [ ] Retorna `RawGameData` validado via Pydantic
+- [ ] Retorna `store_url` limpa; não depende de link afiliado hardcoded
 - [ ] `try/except` com logging em todo I/O
 - [ ] Testes com mock da API Steam
 
@@ -365,11 +369,16 @@ Crawler que consulta a API pública da Steam e retorna dados no formato `RawGame
 **Descrição:**
 Scraper que coleta dados da Nuuvem via HTTPX + BeautifulSoup4.
 
+> **Atenção:** antes de implementar scraping real, validar termos/programa de afiliados. Se houver feed/API oficial, preferir feed/API ao scraper.
+
 **Critérios de Aceitação:**
 - [ ] `backend/app/crawlers/nuuvem.py` herda de `BaseCrawler`
 - [ ] `store_slug = "nuuvem"`
-- [ ] HTTPX async + BeautifulSoup4 para parsing
+- [ ] Decisão de fonte registrada: `feed`, `api`, `scraper`, `manual` ou `disabled`
+- [ ] Se `scraper`, `stores.allows_scraping = true` e `compliance_status = approved`
+- [ ] HTTPX async + BeautifulSoup4 para parsing apenas se scraping for permitido
 - [ ] Retorna `RawGameData` validado
+- [ ] Retorna `store_url` limpa; geração de afiliado fica no redirect interno
 - [ ] `try/except` + logging
 - [ ] Respeita rate limiting (delay entre requests)
 - [ ] Testes com HTML mockado
@@ -396,6 +405,7 @@ Orquestrador que roda todos os crawlers, faz upsert no banco e registra `crawler
 **Critérios de Aceitação:**
 - [ ] `backend/app/crawlers/runner.py`
 - [ ] Registra crawlers ativos
+- [ ] Ignora lojas `disabled`, sem `compliance_status = approved` ou sem permissão para a fonte configurada
 - [ ] Para cada crawler: executa `fetch()`, normaliza, upsert em `games`, `store_products`, `prices`
 - [ ] Registra `crawler_runs` com status, contadores e erros
 - [ ] Falha em um crawler não para os demais
@@ -428,6 +438,8 @@ Implementar os endpoints públicos: busca, listagem paginada e detalhe de jogo c
 - [ ] `GET /api/v1/games` — listagem paginada
 - [ ] `GET /api/v1/games/{slug}` — detalhe com preços ordenados por `price_brl`
 - [ ] `GET /api/v1/prices?game_id={id}` — preços de um jogo
+- [ ] Responses filtram lojas sem `compliance_status = approved`, `allows_price_display = true` ou `is_active = true`
+- [ ] Responses de preço retornam `outbound_url` interno; não expõem `affiliate_url` externa como link primário
 - [ ] Schemas de response: `GameRead`, `GameWithPrices`, `PriceRead`
 - [ ] `backend/app/api/v1/router.py` agrega rotas
 - [ ] Testes de integração para cada endpoint
@@ -455,6 +467,7 @@ Endpoints protegidos por RBAC para administração.
 - [ ] `POST /api/v1/admin/crawl` — força execução dos crawlers (role admin)
 - [ ] `GET /api/v1/admin/stores` — lista lojas
 - [ ] `PATCH /api/v1/admin/stores/{id}` — ativa/desativa loja
+- [ ] Admin consegue visualizar e editar campos de compliance/ingestão de loja quando autorizados
 - [ ] `PATCH /api/v1/admin/games/{id}` — edita `canonical_name`
 - [ ] Todas as rotas protegidas com `require_admin`
 - [ ] Testes com user normal (403) e admin (200)
@@ -484,6 +497,7 @@ Configurar throttling em rotas públicas com `get_real_ip()` para compatibilidad
 - [ ] `backend/app/core/rate_limit.py` — limiter + `get_real_ip()` lendo `CF-Connecting-IP` via Nginx
 - [ ] Rotas de busca e listagem limitadas (ex: 30/min)
 - [ ] Rota de login limitada (ex: 5/min)
+- [ ] Rota pública de outbound redirect limitada com política própria para evitar abuso de tracking
 - [ ] Middleware configurado no `main.py`
 - [ ] Testes verificam header `X-RateLimit-Remaining`
 
@@ -599,6 +613,8 @@ Página principal com barra de busca e grid de jogos com menor preço.
 - [ ] Grid/lista de jogos com capa, título e menor preço
 - [ ] Paginação ou scroll infinito
 - [ ] Loading state e empty state
+- [ ] Lista não exibe lojas/produtos sem permissão de preço retornados pela API
+- [ ] Tipos já contemplam `outbound_url` e metadados de marketplace quando disponíveis
 - [ ] Responsivo
 - [ ] Service Axios para `/search` e `/games`
 - [ ] Tipos TypeScript alinhados com schemas do backend
@@ -625,7 +641,9 @@ Página de detalhe mostrando todos os preços de todas as lojas, ordenados.
 **Critérios de Aceitação:**
 - [ ] Capa do jogo, título, canonical_name
 - [ ] Lista de preços por loja: nome da loja, preço atual, preço original, % desconto
-- [ ] Link direto para compra (affiliate_url)
+- [ ] Botão de compra usa `outbound_url` interno, nunca `affiliate_url` externa direta
+- [ ] Sinaliza marketplace/risco/região quando a API fornecer esses metadados
+- [ ] Estado visual para oferta bloqueada, indisponível ou sem permissão de redirect
 - [ ] "Atualizado há X minutos" baseado em `scraped_at`
 - [ ] Responsivo
 - [ ] Service Axios para `/games/{slug}`
@@ -691,6 +709,172 @@ Configurar Nginx como proxy reverso com reescrita de header para IP real do Clou
 
 ---
 
+## E9 — Afiliados & Store Compliance
+
+### ISSUE-24: Estratégia de afiliados e matriz de lojas
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #24 |
+| **GitHub** | [#50](https://github.com/RodrigoVieira06/lootprice/issues/50) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#24 docs(affiliate): documentar estratégia de lojas, afiliados e riscos` |
+| **Labels** | `type:docs`, `priority:high` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | Nenhuma |
+| **Estimativa** | M |
+
+**Descrição:**
+Manter documentação formal para decisão de lojas, fontes de ingestão, riscos de marketplaces, programas de afiliado e regras de tracking.
+
+**Critérios de Aceitação:**
+- [ ] `docs/affiliate_store_strategy.md` documenta princípios obrigatórios
+- [ ] Matriz inicial cobre Steam, Epic, Xbox, Nintendo, PlayStation, Nuuvem, GMG, Fanatical, Humble, GOG, Eneba, G2A, Kinguin e itch.io
+- [ ] Documento diferencia `api`, `feed`, `scraper`, `manual` e `disabled`
+- [ ] Documento define que crawler não gera tracking comercial
+- [ ] Documento define que frontend usa redirect interno
+- [ ] Fontes oficiais/links de validação ficam listados no documento
+- [ ] `AGENTS.md`, `README.md` e skills apontam para a estratégia
+
+---
+
+### ISSUE-25: Store policy e tracking de cliques no schema
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #25 |
+| **GitHub** | [#51](https://github.com/RodrigoVieira06/lootprice/issues/51) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#25 feat(database): adicionar store policy e affiliate_clicks` |
+| **Labels** | `type:feat`, `priority:high` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | ISSUE-04 |
+| **Estimativa** | L |
+
+**Descrição:**
+Adicionar campos de compliance/ingestão em `stores` e criar `affiliate_clicks` para registrar cliques antes do redirect.
+
+**Critérios de Aceitação:**
+- [ ] `stores` inclui `ingestion_source`, permissões de preço/deeplink/subid/scraping, `affiliate_network`, `affiliate_link_template`, `compliance_status`, `risk_level`, `terms_url`, `compliance_notes`
+- [ ] `affiliate_clicks` criado conforme `docs/database_schema.md`
+- [ ] `ip_hash` usa hash irreversível com salt de ambiente; IP bruto não é persistido
+- [ ] Migration Alembic criada e testada
+- [ ] Seeds de Steam/Nuuvem atualizados com `needs_review`
+- [ ] Testes unitários cobrem defaults, constraints e índices
+
+---
+
+### ISSUE-26: Endpoint de outbound redirect afiliado
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #26 |
+| **GitHub** | [#52](https://github.com/RodrigoVieira06/lootprice/issues/52) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#26 feat(affiliate): endpoint de redirect e tracking de cliques` |
+| **Labels** | `type:feat`, `priority:high` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | ISSUE-14, ISSUE-16, ISSUE-25 |
+| **Estimativa** | L |
+
+**Descrição:**
+Implementar `/api/v1/out/{price_id}` para registrar clique, montar link afiliado por loja e redirecionar com segurança.
+
+**Critérios de Aceitação:**
+- [ ] `GET /api/v1/out/{price_id}` valida loja, produto, preço e permissões
+- [ ] Gera `click_id` único e registra `affiliate_clicks`
+- [ ] Aplica `subid`/`click_id` apenas quando `allows_tracking_subid = true`
+- [ ] Usa `affiliate_link_template` sem hardcoded de credenciais
+- [ ] Responde 302 para destino válido
+- [ ] Responde erro controlado para loja bloqueada, preço indisponível ou compliance pendente
+- [ ] Rota tem rate limit
+- [ ] Testes cobrem sucesso, bloqueios e loja sem tracking
+
+---
+
+### ISSUE-27: Admin de compliance e fontes de loja
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #27 |
+| **GitHub** | [#53](https://github.com/RodrigoVieira06/lootprice/issues/53) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#27 feat(admin): gerenciar compliance e fonte de lojas` |
+| **Labels** | `type:feat`, `priority:medium` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | ISSUE-09, ISSUE-15, ISSUE-25 |
+| **Estimativa** | M |
+
+**Descrição:**
+Permitir que admin veja e atualize o estado de compliance, fonte de ingestão e flags de afiliado das lojas.
+
+**Critérios de Aceitação:**
+- [ ] `GET /admin/stores` retorna campos de compliance e risco
+- [ ] `PATCH /admin/stores/{id}` permite alterar `ingestion_source`, permissões, status, risco e notas
+- [ ] Campos sensíveis de template afiliado não são expostos sem necessidade
+- [ ] Validação impede `scraper` aprovado sem `allows_scraping = true`
+- [ ] Testes cobrem admin, user normal e validações
+
+---
+
+### ISSUE-28: Pesquisa formal de programas de afiliado por loja
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #28 |
+| **GitHub** | [#54](https://github.com/RodrigoVieira06/lootprice/issues/54) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#28 docs(affiliate): validar termos e programas por loja` |
+| **Labels** | `type:docs`, `priority:high` |
+| **Milestone** | Fase 1 - MVP Backend |
+| **Dependências** | ISSUE-24 |
+| **Estimativa** | L |
+
+**Descrição:**
+Pesquisar e registrar termos oficiais, programa de afiliado, disponibilidade de feed/API e restrições para as lojas candidatas.
+
+**Critérios de Aceitação:**
+- [ ] Nuuvem validada quanto a afiliado, scraping, feed/API e deep link
+- [ ] Steam validada quanto a API de preço/catálogo e uso comercial
+- [ ] Green Man Gaming e Fanatical validadas como candidatas de lojas autorizadas
+- [ ] GOG e Humble validadas para segunda onda
+- [ ] Eneba, G2A e Kinguin avaliadas com riscos de marketplace
+- [ ] Resultado de cada loja registrado em `docs/affiliate_store_strategy.md`
+- [ ] Lojas sem validação permanecem `needs_review` ou `disabled`
+
+---
+
+### ISSUE-29: Conversões de afiliado via postback/API/CSV
+
+| Campo | Valor |
+|---|---|
+| **Ordem** | #29 |
+| **GitHub** | [#55](https://github.com/RodrigoVieira06/lootprice/issues/55) |
+| **Status** | `[Backlog]` |
+| **Tipo** | task |
+| **Título** | `#29 feat(affiliate): importar conversões e comissões` |
+| **Labels** | `type:feat`, `priority:low` |
+| **Milestone** | Fase 2 - Expansão |
+| **Dependências** | ISSUE-26, ISSUE-28 |
+| **Estimativa** | XL |
+
+**Descrição:**
+Implementar reconciliação de conversões e comissões quando as redes/lojas oferecerem postback, API ou relatório CSV.
+
+**Critérios de Aceitação:**
+- [ ] Schema `affiliate_conversions` definido em migration futura
+- [ ] Importador por rede/parceiro isolado por módulo
+- [ ] Conversões vinculam `click_id` quando disponível
+- [ ] Relatórios agregam cliques, conversões, comissão e taxa de aprovação
+- [ ] Nenhuma credencial de rede fica hardcoded
+
+---
+
 ## Grafo de Dependências
 
 ```
@@ -707,6 +891,10 @@ ISSUE-01 (#1) — setup
   │     │           ├── ISSUE-15 (#15) — API admin ← depende de 09, 13, 14
   │     │           ├── ISSUE-16 (#16) — rate limiting
   │     │           │     └── ISSUE-23 (#23) — Nginx ← bloqueado
+  │     │           ├── ISSUE-25 (#25) — store policy + affiliate_clicks
+  │     │           │     └── ISSUE-26 (#26) — outbound redirect
+  │     │           │           └── ISSUE-29 (#29) — conversões ← Fase 2
+  │     │           ├── ISSUE-27 (#27) — admin compliance
   │     │           └── ISSUE-19 (#19) — frontend setup ← Fase 1.5
   │     │                 ├── ISSUE-20 (#20) — busca
   │     │                 │     └── ISSUE-21 (#21) — detalhe
@@ -718,6 +906,9 @@ ISSUE-01 (#1) — setup
   │           │     └── ISSUE-17 (#17) — OAuth Google
   │           │           └── ISSUE-18 (#18) — OAuth Discord
   │           └── ISSUE-17 (#17) — OAuth Google ← depende de 05 e 07
+ISSUE-24 (#24) — estratégia afiliados
+  ├── ISSUE-25 (#25) — store policy + affiliate_clicks
+  └── ISSUE-28 (#28) — pesquisa formal por loja
 ```
 
 ---
@@ -751,3 +942,9 @@ Sequência respeitando dependências e prioridades:
 | #21 | Detalhe | [#44](https://github.com/RodrigoVieira06/lootprice/issues/44) | 📋 Backlog |
 | #22 | Login/registro | [#45](https://github.com/RodrigoVieira06/lootprice/issues/45) | 📋 Backlog |
 | #23 | Nginx ⚠️ bloqueado | [#46](https://github.com/RodrigoVieira06/lootprice/issues/46) | 📋 Backlog |
+| #24 | Estratégia afiliados | A criar | 📋 Backlog |
+| #25 | Store policy + affiliate_clicks | A criar | 📋 Backlog |
+| #26 | Outbound redirect | A criar | 📋 Backlog |
+| #27 | Admin compliance | A criar | 📋 Backlog |
+| #28 | Pesquisa formal por loja | A criar | 📋 Backlog |
+| #29 | Conversões afiliado | A criar | 📋 Backlog / Fase 2 |
