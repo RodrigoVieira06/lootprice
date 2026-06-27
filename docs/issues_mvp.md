@@ -134,7 +134,7 @@ Configurar conexão async com PostgreSQL e inicializar Alembic para controle de 
 |---|---|
 | **Ordem** | #4 |
 | **GitHub** | [#27](https://github.com/RodrigoVieira06/lootprice/issues/27) |
-| **Status** | `[Backlog]` |
+| **Status** | `[Prioritized]` |
 | **Tipo** | task |
 | **Título** | `#4 feat(database): models stores, games, store_products, prices` |
 | **Labels** | `type:feat`, `priority:high` |
@@ -165,7 +165,7 @@ Criar models SQLModel para `stores`, `games`, `store_products` e `prices` confor
 |---|---|
 | **Ordem** | #5 |
 | **GitHub** | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) |
-| **Status** | `[Backlog]` |
+| **Status** | `[Prioritized]` |
 | **Tipo** | task |
 | **Título** | `#5 feat(database): model users, oauth_accounts, revoked_tokens` |
 | **Labels** | `type:feat`, `priority:high` |
@@ -193,7 +193,7 @@ Criar models de autenticação: `users`, `oauth_accounts` e `revoked_tokens`.
 |---|---|
 | **Ordem** | #6 |
 | **GitHub** | [#29](https://github.com/RodrigoVieira06/lootprice/issues/29) |
-| **Status** | `[Backlog]` |
+| **Status** | `[Prioritized]` |
 | **Tipo** | task |
 | **Título** | `#6 feat(database): model crawler_runs` |
 | **Labels** | `type:feat`, `priority:medium` |
@@ -942,9 +942,9 @@ Sequência respeitando dependências e prioridades:
 | #21 | Detalhe | [#44](https://github.com/RodrigoVieira06/lootprice/issues/44) | 📋 Backlog |
 | #22 | Login/registro | [#45](https://github.com/RodrigoVieira06/lootprice/issues/45) | 📋 Backlog |
 | #23 | Nginx ⚠️ bloqueado | [#46](https://github.com/RodrigoVieira06/lootprice/issues/46) | 📋 Backlog |
-| #24 | Estratégia afiliados | A criar | 📋 Backlog |
-| #25 | Store policy + affiliate_clicks | A criar | 📋 Backlog |
+| #24 | Estratégia afiliados | [#50](https://github.com/RodrigoVieira06/lootprice/issues/50) | ⏳ Prioritized |
+| #25 | Store policy + affiliate_clicks | [#51](https://github.com/RodrigoVieira06/lootprice/issues/51) | ⏳ Prioritized |
 | #26 | Outbound redirect | A criar | 📋 Backlog |
 | #27 | Admin compliance | A criar | 📋 Backlog |
-| #28 | Pesquisa formal por loja | A criar | 📋 Backlog |
+| #28 | Pesquisa formal por loja | [#54](https://github.com/RodrigoVieira06/lootprice/issues/54) | ⏳ Prioritized |
 | #29 | Conversões afiliado | A criar | 📋 Backlog / Fase 2 |
