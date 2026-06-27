@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     secret_key: str
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
+    ip_hash_salt: str = ""
     google_client_id: str = ""
     google_client_secret: str = ""
     discord_client_id: str = ""
