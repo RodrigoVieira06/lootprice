@@ -684,6 +684,7 @@ lootprice/
 │   │   ├── models/revoked_token.py ✅
 │   │   ├── core/privacy.py         ✅
 │   │   ├── schemas/user.py         ✅
+│   │   ├── crawlers/normalizer.py ✅
 │   │   └── api/, schemas/, crawlers/  ✅
 │   ├── migrations/                 ✅
 │   │   ├── env.py                  ✅
@@ -691,7 +692,7 @@ lootprice/
 │   │   ├── versions/202606220001_create_core_catalog_tables.py ✅
 │   │   └── versions/202606270001_create_auth_tables.py ✅
 │   │   └── versions/202606270002_add_store_policy_affiliate_clicks.py ✅
-│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py) ✅
+│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py, test_crawler_normalizer.py) ✅
 │   ├── alembic.ini                 ✅
 │   ├── .env.example                  ✅
 │   ├── main.py                       ✅
