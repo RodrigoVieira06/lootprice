@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import CITEXT
 from sqlmodel import SQLModel
 
 from app.models import (
+    AffiliateClick,
     Game,
     OAuthAccount,
     Price,
@@ -43,6 +44,10 @@ def test_core_catalog_models_are_registered_in_metadata() -> None:
     )
 
 
+def test_affiliate_click_model_is_registered_in_metadata() -> None:
+    assert "affiliate_clicks" in SQLModel.metadata.tables
+
+
 def test_auth_models_are_registered_in_metadata() -> None:
     assert {"users", "oauth_accounts", "revoked_tokens"}.issubset(
         SQLModel.metadata.tables
@@ -59,7 +64,64 @@ def test_store_model_indexes_and_defaults() -> None:
 
     assert store.is_active is True
     assert store.is_marketplace is False
-    assert {"uq_stores_slug", "uq_stores_crawler_key"}.issubset(index_names(Store))
+    assert store.ingestion_source == "disabled"
+    assert store.allows_price_display is False
+    assert store.allows_affiliate_deeplink is False
+    assert store.allows_tracking_subid is False
+    assert store.allows_scraping is False
+    assert store.compliance_status == "unknown"
+    assert store.risk_level == "medium"
+    assert {
+        "chk_stores_ingestion_source",
+        "chk_stores_compliance_status",
+        "chk_stores_risk_level",
+    }.issubset(constraint_names(Store))
+    assert {
+        "uq_stores_slug",
+        "uq_stores_crawler_key",
+        "idx_stores_ingestion_source",
+        "idx_stores_compliance_status",
+        "idx_stores_risk_level",
+    }.issubset(index_names(Store))
+
+
+def test_affiliate_click_model_indexes_money_and_foreign_keys() -> None:
+    affiliate_click = AffiliateClick(
+        store_id=uuid4(),
+        store_product_id=uuid4(),
+        price_id=uuid4(),
+        game_id=uuid4(),
+        user_id=uuid4(),
+        placement="game_detail",
+        position=1,
+        price_brl=Decimal("49.90"),
+        destination_url="https://store.example/cyberpunk-2077",
+        ip_hash="a" * 64,
+    )
+
+    assert affiliate_click.click_id is not None
+    assert isinstance(affiliate_click.price_brl, Decimal)
+    assert isinstance(AffiliateClick.__table__.c.price_brl.type, Numeric)
+    assert AffiliateClick.__table__.c.price_brl.type.precision == 10
+    assert AffiliateClick.__table__.c.price_brl.type.scale == 2
+    assert {
+        "uq_affiliate_clicks_click_id",
+        "idx_affiliate_clicks_store_clicked",
+        "idx_affiliate_clicks_game_clicked",
+        "idx_affiliate_clicks_product_clicked",
+    }.issubset(index_names(AffiliateClick))
+
+    foreign_keys = {
+        foreign_key.target_fullname
+        for foreign_key in AffiliateClick.__table__.foreign_keys
+    }
+    assert foreign_keys == {
+        "stores.id",
+        "store_products.id",
+        "prices.id",
+        "games.id",
+        "users.id",
+    }
 
 
 def test_user_model_constraints_indexes_and_defaults() -> None:
@@ -213,6 +275,7 @@ def test_timestamp_columns_keep_database_defaults_in_metadata() -> None:
     assert server_default_sql(StoreProduct, "updated_at") == "now()"
     assert server_default_sql(Price, "created_at") == "now()"
     assert server_default_sql(Price, "updated_at") == "now()"
+    assert server_default_sql(AffiliateClick, "clicked_at") == "now()"
     assert server_default_sql(User, "created_at") == "now()"
     assert server_default_sql(User, "updated_at") == "now()"
     assert server_default_sql(OAuthAccount, "created_at") == "now()"

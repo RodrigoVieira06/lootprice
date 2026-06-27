@@ -361,6 +361,7 @@ GET /auth/google → Redirect provider → Callback → Upsert user + oauth_acco
 ```env
 DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/lootprice
 SECRET_KEY=<openssl rand -hex 32>
+IP_HASH_SALT=<openssl rand -hex 32>
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 GOOGLE_CLIENT_ID=
@@ -677,9 +678,11 @@ lootprice/
 │   │   ├── models/game.py          ✅
 │   │   ├── models/store_product.py ✅
 │   │   ├── models/price.py         ✅
+│   │   ├── models/affiliate_click.py ✅
 │   │   ├── models/user.py          ✅
 │   │   ├── models/oauth_account.py ✅
 │   │   ├── models/revoked_token.py ✅
+│   │   ├── core/privacy.py         ✅
 │   │   ├── schemas/user.py         ✅
 │   │   └── api/, schemas/, crawlers/  ✅
 │   ├── migrations/                 ✅
@@ -687,7 +690,8 @@ lootprice/
 │   │   ├── versions/202606210001_create_postgresql_extensions.py ✅
 │   │   ├── versions/202606220001_create_core_catalog_tables.py ✅
 │   │   └── versions/202606270001_create_auth_tables.py ✅
-│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py) ✅
+│   │   └── versions/202606270002_add_store_policy_affiliate_clicks.py ✅
+│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py) ✅
 │   ├── alembic.ini                 ✅
 │   ├── .env.example                  ✅
 │   ├── main.py                       ✅
@@ -732,6 +736,7 @@ lootprice/
 | 2026-06 | Frontend Fase 1.5 será web-first e mobile-ready | Preparar Android/iOS futuro sem adicionar stack mobile antes da fase mobile |
 | 2026-06 | Mobile futuro comparará React Native + Expo, Tauri v2 e Capacitor | React Native + Expo é preferencial se mobile nativo virar prioridade; Tauri/Capacitor preservam mais reuso da SPA |
 | 2026-06 | Models de autenticação criados em migration própria | `users`, `oauth_accounts` e `revoked_tokens` desbloqueiam JWT local, OAuth, RBAC e logout real |
+| 2026-06 | Store policy e `affiliate_clicks` criados em migration própria | Flags de compliance/ingestão e métricas de clique sustentam redirect afiliado do MVP |
 
 ### Débitos Técnicos
 
