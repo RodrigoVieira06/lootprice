@@ -1,8 +1,8 @@
 # LootPrice — Contexto Unificado para IA
 
-> **Versão:** 0.3.0-MVP
+> **Versão:** 0.3.2-MVP
 > **Status:** Desenvolvimento Ativo
-> **Última atualização:** 2026-06-26
+> **Última atualização:** 2026-06-27
 > **Audiência:** LLMs de apoio (Antigravity IDE, Claude Code, Gemini CLI, Cursor, Copilot)
 > **Documentação humana:** `README.md`
 
@@ -72,7 +72,7 @@ Usuário busca jogo → LootPrice consulta N lojas permitidas → Resultado: lis
 | Afiliados | Store compliance, outbound redirect, métricas de clique |
 | Tooling | Conventional Commits, Lefthook, Ruff, Pytest, Alembic |
 
-**Fora de Escopo (Fases Futuras):** Wishlist, alertas de preço, histórico de preços, conversões de afiliado, G2A/Eneba/Kinguin, consoles, customização avançada.
+**Fora de Escopo (Fases Futuras):** Wishlist, alertas de preço, histórico de preços, conversões de afiliado, apps Android/iOS, G2A/Eneba/Kinguin, consoles, customização avançada.
 
 ---
 
@@ -121,6 +121,7 @@ Usuário busca jogo → LootPrice consulta N lojas permitidas → Resultado: lis
 | Lint/Format | Biome |
 | Testes | Jest |
 | Pacotes | pnpm |
+| Mobile futuro | SPA mobile-ready; React Native + Expo preferencial se mobile nativo virar prioridade; Tauri/Capacitor a avaliar |
 
 ### Tooling & DevOps
 
@@ -162,6 +163,7 @@ lootprice/                          # Raiz do Monorepo
 ├── docs/
 │   ├── database_schema.md          # Modelagem detalhada do banco
 │   ├── affiliate_store_strategy.md # Estratégia de lojas, afiliados e riscos
+│   ├── frontend_mobile_strategy.md # Regras para SPA mobile-ready e fase Android/iOS
 │   └── issues_mvp.md              # Issues detalhadas para o MVP
 │
 ├── backend/
@@ -219,6 +221,7 @@ lootprice/                          # Raiz do Monorepo
 │   │   ├── components/
 │   │   ├── pages/
 │   │   ├── hooks/
+│   │   ├── platform/               # Adapters: outbound, storage, auth redirect, browser APIs
 │   │   ├── services/
 │   │   ├── store/
 │   │   └── types/
@@ -644,8 +647,8 @@ commit-msg:
 
 | Campo | Valor |
 |---|---|
-| **Versão** | 0.3.0 |
-| **Última atualização** | 2026-06-26 |
+| **Versão** | 0.3.2 |
+| **Última atualização** | 2026-06-27 |
 | **Fase atual** | Desenvolvimento — Arquitetura de afiliados, store compliance e models core |
 
 ### Estrutura de Arquivos Atual
@@ -664,6 +667,7 @@ lootprice/
 ├── docs/
 │   ├── affiliate_store_strategy.md   ✅
 │   ├── database_schema.md            ✅
+│   ├── frontend_mobile_strategy.md   ✅
 │   └── issues_mvp.md                 ✅
 ├── backend/
 │   ├── app/
@@ -720,6 +724,8 @@ lootprice/
 | 2026-06 | Toda loja exige política de ingestão e compliance | Evitar crawler proibido por termos e reduzir risco de bloqueio/legal |
 | 2026-06 | Cliques de compra passam por redirect interno | Permite métricas, `click_id/subid`, bloqueio de lojas inválidas e privacidade controlada |
 | 2026-06 | Marketplaces de keys ficam fora do MVP inicial | G2A/Eneba/Kinguin exigem UX de risco, região, vendedor e reputação |
+| 2026-06 | Frontend Fase 1.5 será web-first e mobile-ready | Preparar Android/iOS futuro sem adicionar stack mobile antes da fase mobile |
+| 2026-06 | Mobile futuro comparará React Native + Expo, Tauri v2 e Capacitor | React Native + Expo é preferencial se mobile nativo virar prioridade; Tauri/Capacitor preservam mais reuso da SPA |
 
 ### Débitos Técnicos
 
@@ -753,9 +759,11 @@ lootprice/
 ### Fase 1.5 — Frontend (MVP)
 
 - Setup React SPA: Vite + TSX + SCSS + Zustand + Biome + Jest + pnpm
+- Arquitetura mobile-ready: adapters em `src/platform/` para outbound, storage, auth redirect e APIs globais do browser
 - Página de busca e listagem
 - Páginas de login e registro
 - Página de detalhe com comparação de preços e `outbound_url` interno
+- Não adicionar React Native/Expo/Tauri/Capacitor/Rust/Android/iOS ao MVP sem issue e decisão registrada
 
 ### Fase 2 — Expansão
 
@@ -765,6 +773,18 @@ lootprice/
 - Conversões de afiliado via postback/API/CSV quando disponível
 - Wishlist e favoritos
 - Limpeza de `revoked_tokens` (DT-01)
+
+### Fase 2.5 — Mobile Apps (Android/iOS)
+
+- Spike comparando React Native + Expo, Tauri v2 e Capacitor para Android/iOS
+- Preferir React Native + Expo se o objetivo for UX mobile nativa, push notifications, storage seguro e evolução independente da web
+- Considerar Tauri se desktop também for objetivo ou se reuso máximo da SPA for prioridade
+- Considerar Capacitor se o objetivo for WebView mobile com menor custo operacional
+- Compartilhar contratos e lógica entre SPA e app mobile quando fizer sentido: tipos TypeScript, schemas Zod, services de API, auth e outbound
+- Implementar deep links para OAuth Google/Discord
+- Implementar storage seguro para tokens
+- Validar política de lojas, afiliados e privacidade para app stores
+- Criar CI separado para builds Android/iOS
 
 ### Fase 3 — Features Avançadas
 
@@ -822,7 +842,8 @@ Seja **direto ao ponto**. Respostas objetivas, sem explicações desnecessárias
 1. Leia este arquivo (`AGENTS.md`)
 2. Leia a skill relevante: `ai/lootprice-backend-developer/SKILL.md`, `ai/lootprice-frontend-developer/SKILL.md`, ou `ai/lootprice-scrum-master/SKILL.md`
 3. Leia `docs/affiliate_store_strategy.md` ao tocar lojas, crawlers, preços, frontend de ofertas, redirects ou issues de novas lojas
-4. Verifique o estado real do repositório (árvore de arquivos, Makefile, CI)
+4. Leia `docs/frontend_mobile_strategy.md` ao tocar setup frontend, auth, storage, links externos, arquitetura de services, responsividade ou mobile futuro
+5. Verifique o estado real do repositório (árvore de arquivos, Makefile, CI)
 
 ### Regras Invioláveis
 
@@ -835,6 +856,7 @@ Seja **direto ao ponto**. Respostas objetivas, sem explicações desnecessárias
 - **Nunca crie crawler de loja nova sem registrar fonte permitida e compliance**
 - **Nunca exponha link afiliado externo direto no frontend quando existir `outbound_url` interno**
 - **Nunca misture marketplace de keys com loja autorizada sem sinalização explícita**
+- **Nunca adicione React Native/Expo/Tauri/Capacitor ou dependências mobile ao MVP frontend sem issue e decisão registrada**
 
 ### Hierarquia de Autoridade
 

@@ -90,6 +90,8 @@
 | F-05 | Biome usado para lint/format/imports | ✅ / ❌ / N/A |
 | F-06 | Testes frontend usam Jest | ✅ / ❌ / N/A |
 | F-07 | Gerenciador frontend é pnpm | ✅ / ❌ / N/A |
+| F-08 | Frontend segue arquitetura mobile-ready | ✅ / ❌ / N/A |
+| F-09 | Sem stack mobile no MVP sem decisão | ✅ / ❌ / N/A |
 | G-01 | Conventional Commits no título do PR | ✅ / ❌ |
 | G-02 | Padrão de nome de branch correto | ✅ / ❌ |
 | G-03 | `AGENTS.md` §15 atualizado | ✅ / ❌ / N/A |

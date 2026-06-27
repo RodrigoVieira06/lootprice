@@ -1,6 +1,6 @@
 # LootPrice — Issues do MVP
 
-> **Última atualização:** 2026-06-26
+> **Última atualização:** 2026-06-27
 > **Audiência:** Desenvolvedores, Scrum Master IA, LLMs de apoio
 > **Gestão:** GitHub Issues no repositório `RodrigoVieira06/lootprice`
 
@@ -559,6 +559,10 @@ Login social via Discord OAuth2, mesma estrutura do Google.
 
 ## E7 — Frontend MVP
 
+> A Fase 1.5 deve seguir `docs/frontend_mobile_strategy.md`: React SPA
+> web-first, mobile-ready, sem React Native/Expo/Tauri/Capacitor no MVP,
+> com adapters para comportamento dependente de plataforma.
+
 ### ISSUE-19: Setup React SPA
 
 | Campo | Valor |
@@ -586,7 +590,11 @@ Criar a base do frontend React com toda a toolchain configurada.
 - [ ] pnpm como gerenciador
 - [ ] Scripts: `dev`, `build`, `lint`, `format`, `test`
 - [ ] `.env.example` com `VITE_API_URL`
-- [ ] Estrutura: `src/components/`, `pages/`, `hooks/`, `services/`, `store/`, `types/`
+- [ ] Estrutura: `src/components/`, `pages/`, `hooks/`, `platform/`, `services/`, `store/`, `types/`
+- [ ] `src/platform/` inclui adapters mínimos para outbound, storage de sessão/tokens, auth redirect e APIs globais do browser
+- [ ] Nenhuma dependência React Native/Expo/Tauri/Capacitor/Rust/Android/iOS adicionada no MVP sem issue e decisão registrada
+- [ ] App nasce mobile-ready: layout responsivo, touch-friendly e validado em viewport mobile
+- [ ] Código de domínio não espalha `window.location`, `window.open`, `localStorage`, `sessionStorage` ou `document`; usa adapters quando necessário
 - [ ] Job frontend reativado no CI
 
 ---
@@ -615,7 +623,7 @@ Página principal com barra de busca e grid de jogos com menor preço.
 - [ ] Loading state e empty state
 - [ ] Lista não exibe lojas/produtos sem permissão de preço retornados pela API
 - [ ] Tipos já contemplam `outbound_url` e metadados de marketplace quando disponíveis
-- [ ] Responsivo
+- [ ] Responsivo e usável em viewport mobile
 - [ ] Service Axios para `/search` e `/games`
 - [ ] Tipos TypeScript alinhados com schemas do backend
 
@@ -641,11 +649,11 @@ Página de detalhe mostrando todos os preços de todas as lojas, ordenados.
 **Critérios de Aceitação:**
 - [ ] Capa do jogo, título, canonical_name
 - [ ] Lista de preços por loja: nome da loja, preço atual, preço original, % desconto
-- [ ] Botão de compra usa `outbound_url` interno, nunca `affiliate_url` externa direta
+- [ ] Botão de compra usa adapter único de outbound com `outbound_url` interno, nunca `affiliate_url` externa direta
 - [ ] Sinaliza marketplace/risco/região quando a API fornecer esses metadados
 - [ ] Estado visual para oferta bloqueada, indisponível ou sem permissão de redirect
 - [ ] "Atualizado há X minutos" baseado em `scraped_at`
-- [ ] Responsivo
+- [ ] Responsivo, touch-friendly e validado em viewport mobile
 - [ ] Service Axios para `/games/{slug}`
 
 ---
@@ -671,7 +679,9 @@ Formulários de login (local + social) e registro.
 - [ ] Formulário de login com email/senha (React Hook Form + Zod)
 - [ ] Formulário de registro
 - [ ] Botões de login social (Google, Discord)
-- [ ] Gerenciamento de tokens (Zustand store)
+- [ ] Gerenciamento de tokens (Zustand store) usando adapter de storage substituível
+- [ ] Não grava tokens sensíveis em `localStorage` sem decisão explícita registrada
+- [ ] Fluxo de OAuth centralizado em service/adapter para permitir deep links mobile no futuro
 - [ ] Redirect após login
 - [ ] Validação client-side com Zod
 - [ ] Tratamento de erros da API

@@ -1,7 +1,7 @@
 # LootPrice — Estrategia de Afiliados, Lojas e Fontes de Dados
 
 > **Versao:** 0.1.0-MVP
-> **Ultima atualizacao:** 2026-06-26
+> **Ultima atualizacao:** 2026-06-27
 > **Status:** Decisao arquitetural obrigatoria antes de novos crawlers
 > **Audiencia:** Desenvolvedores, IAs de apoio, Scrum Master, Produto
 
@@ -283,6 +283,9 @@ conversao real.
 ### Frontend
 
 - Botoes de compra usam `outbound_url` interno.
+- Web, React Native/Expo, Tauri, Capacitor ou qualquer app futuro devem abrir
+  ofertas por camada unica de outbound, sempre preservando chamada a
+  `/api/v1/out/{price_id}`.
 - UI deve sinalizar marketplace, risco/regiao e ultima atualizacao.
 - Pagina de detalhe deve manter comparacao clara, mas nao esconder contexto de
   loja versus marketplace.

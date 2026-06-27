@@ -14,10 +14,12 @@ Transforma qualquer IA CLI em um **desenvolvedor backend sênior do LootPrice** 
 Também conhece a estratégia de lojas/afiliados: fonte permitida por loja, redirect interno, métricas de clique e riscos de marketplaces.
 
 ### 🎨 [`lootprice-frontend-developer/SKILL.md`](./lootprice-frontend-developer/SKILL.md)
-**Quando usar:** Tarefas de React, TypeScript/TSX, Vite, SCSS, Biome, Jest, pnpm, UX, acessibilidade ou integração com a API.
+**Quando usar:** Tarefas de React, TypeScript/TSX, Vite, SCSS, Biome, Jest, pnpm, UX, acessibilidade, integração com a API ou mobile futuro.
 
 Transforma qualquer IA CLI em um **desenvolvedor frontend sênior do LootPrice** — conhece a stack planejada, respeita contratos da API e não assume estrutura React antes de existir.
 Para ofertas, usa `outbound_url` interno e trata marketplaces, riscos e estados bloqueados sem expor link afiliado direto.
+Também segue `docs/frontend_mobile_strategy.md`: SPA web-first, mobile-ready, sem React Native/Expo/Tauri/Capacitor no MVP, com adapters para outbound, storage, auth redirect e APIs de plataforma.
+Para a fase mobile, considera React Native + Expo como preferencial se mobile nativo virar prioridade, mantendo Tauri e Capacitor como alternativas conforme objetivo de reuso/desktop/WebView.
 
 ### 🔍 [`lootprice-reviewer/SKILL.md`](./lootprice-reviewer/SKILL.md)
 **Quando usar:** Para revisar um Pull Request aberto.
@@ -77,5 +79,6 @@ ai/
 Para entender o estado atual do projeto:
 - **[`AGENTS.md`](../AGENTS.md)** — contexto unificado (arquitetura, estado, regras, decisões)
 - **[`docs/affiliate_store_strategy.md`](../docs/affiliate_store_strategy.md)** — estratégia de lojas, afiliados, fontes de dados e riscos
+- **[`docs/frontend_mobile_strategy.md`](../docs/frontend_mobile_strategy.md)** — estratégia frontend mobile-ready e fase futura Android/iOS
 - **[`docs/database_schema.md`](../docs/database_schema.md)** — schema completo do banco
 - **[`docs/issues_mvp.md`](../docs/issues_mvp.md)** — issues detalhadas para o MVP

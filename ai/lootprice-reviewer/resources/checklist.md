@@ -35,6 +35,8 @@
 | F-05 | Biome é usado para lint/format/imports | Checar `biome.json` e scripts de `package.json` |
 | F-06 | Testes frontend usam Jest | Checar scripts e arquivos `*.test.ts`/`*.test.tsx` |
 | F-07 | Gerenciador frontend é pnpm | Checar `pnpm-lock.yaml` e evitar `package-lock.json`/`yarn.lock` |
+| F-08 | Frontend segue arquitetura mobile-ready | Checar `src/platform/` para outbound, storage, auth redirect e APIs globais do browser |
+| F-09 | MVP frontend não adiciona stack mobile sem decisão | Buscar React Native, Expo, `src-tauri`, `@tauri-apps/*`, Capacitor, Android/iOS ou Rust sem issue/decisão em docs |
 
 ---
 
