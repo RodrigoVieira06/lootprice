@@ -165,7 +165,7 @@ Criar models SQLModel para `stores`, `games`, `store_products` e `prices` confor
 |---|---|
 | **Ordem** | #5 |
 | **GitHub** | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) |
-| **Status** | `[Prioritized]` |
+| **Status** | `[Code Review]` |
 | **Tipo** | task |
 | **Título** | `#5 feat(database): model users, oauth_accounts, revoked_tokens` |
 | **Labels** | `type:feat`, `priority:high` |
@@ -933,7 +933,7 @@ Sequência respeitando dependências e prioridades:
 | #2 | CI | [#25](https://github.com/RodrigoVieira06/lootprice/issues/25) | 🔄 **Code Review** |
 | #3 | PostgreSQL + Alembic | [#26](https://github.com/RodrigoVieira06/lootprice/issues/26) | ⏳ **Prioritized** |
 | #4 | Models lojas/jogos | [#27](https://github.com/RodrigoVieira06/lootprice/issues/27) | 📋 Backlog |
-| #5 | Models users | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) | 📋 Backlog |
+| #5 | Models users | [#28](https://github.com/RodrigoVieira06/lootprice/issues/28) | 🔄 **Code Review** |
 | #6 | Model crawler_runs | [#29](https://github.com/RodrigoVieira06/lootprice/issues/29) | 📋 Backlog |
 | #7 | JWT local | [#30](https://github.com/RodrigoVieira06/lootprice/issues/30) | 📋 Backlog |
 | #8 | Refresh/logout | [#31](https://github.com/RodrigoVieira06/lootprice/issues/31) | 📋 Backlog |

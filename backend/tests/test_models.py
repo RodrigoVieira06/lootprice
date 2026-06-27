@@ -3,9 +3,19 @@ from decimal import Decimal
 from uuid import uuid4
 
 from sqlalchemy import CheckConstraint, Numeric
+from sqlalchemy.dialects.postgresql import CITEXT
 from sqlmodel import SQLModel
 
-from app.models import Game, Price, Store, StoreProduct
+from app.models import (
+    Game,
+    OAuthAccount,
+    Price,
+    RevokedToken,
+    Store,
+    StoreProduct,
+    User,
+)
+from app.schemas.user import UserRead
 
 
 def constraint_names(model: type[SQLModel]) -> set[str]:
@@ -33,6 +43,12 @@ def test_core_catalog_models_are_registered_in_metadata() -> None:
     )
 
 
+def test_auth_models_are_registered_in_metadata() -> None:
+    assert {"users", "oauth_accounts", "revoked_tokens"}.issubset(
+        SQLModel.metadata.tables
+    )
+
+
 def test_store_model_indexes_and_defaults() -> None:
     store = Store(
         name="Steam",
@@ -44,6 +60,74 @@ def test_store_model_indexes_and_defaults() -> None:
     assert store.is_active is True
     assert store.is_marketplace is False
     assert {"uq_stores_slug", "uq_stores_crawler_key"}.issubset(index_names(Store))
+
+
+def test_user_model_constraints_indexes_and_defaults() -> None:
+    user = User(email="USER@example.com")
+
+    assert user.role == "user"
+    assert user.is_active is True
+    assert user.hashed_password is None
+    assert isinstance(User.__table__.c.email.type, CITEXT)
+    assert "chk_users_role" in constraint_names(User)
+    assert "uq_users_email" in index_names(User)
+
+
+def test_user_read_schema_does_not_expose_hashed_password() -> None:
+    user = User(
+        email="user@example.com",
+        display_name="User",
+        hashed_password="secret-hash",
+    )
+
+    payload = UserRead.model_validate(user, from_attributes=True).model_dump()
+
+    assert payload["email"] == "user@example.com"
+    assert "hashed_password" not in payload
+
+
+def test_oauth_account_constraints_indexes_and_foreign_keys() -> None:
+    oauth_account = OAuthAccount(
+        user_id=uuid4(),
+        provider="google",
+        provider_user_id="google-123",
+        provider_email="user@example.com",
+    )
+
+    assert oauth_account.provider == "google"
+    assert isinstance(OAuthAccount.__table__.c.provider_email.type, CITEXT)
+    assert "chk_oauth_provider" in constraint_names(OAuthAccount)
+    assert {
+        "uq_oauth_provider_user",
+        "idx_oauth_accounts_user_id",
+    }.issubset(index_names(OAuthAccount))
+
+    foreign_keys = {
+        foreign_key.target_fullname
+        for foreign_key in OAuthAccount.__table__.foreign_keys
+    }
+    assert foreign_keys == {"users.id"}
+
+
+def test_revoked_token_indexes_defaults_and_foreign_keys() -> None:
+    token_jti = uuid4()
+    revoked_token = RevokedToken(
+        token_jti=token_jti,
+        user_id=uuid4(),
+        expires_at=datetime.now(UTC),
+    )
+
+    assert revoked_token.token_jti == token_jti
+    assert {
+        "uq_revoked_tokens_jti",
+        "idx_revoked_tokens_expires_at",
+    }.issubset(index_names(RevokedToken))
+
+    foreign_keys = {
+        foreign_key.target_fullname
+        for foreign_key in RevokedToken.__table__.foreign_keys
+    }
+    assert foreign_keys == {"users.id"}
 
 
 def test_game_model_constraints_indexes_and_defaults() -> None:
@@ -129,3 +213,8 @@ def test_timestamp_columns_keep_database_defaults_in_metadata() -> None:
     assert server_default_sql(StoreProduct, "updated_at") == "now()"
     assert server_default_sql(Price, "created_at") == "now()"
     assert server_default_sql(Price, "updated_at") == "now()"
+    assert server_default_sql(User, "created_at") == "now()"
+    assert server_default_sql(User, "updated_at") == "now()"
+    assert server_default_sql(OAuthAccount, "created_at") == "now()"
+    assert server_default_sql(OAuthAccount, "updated_at") == "now()"
+    assert server_default_sql(RevokedToken, "revoked_at") == "now()"
