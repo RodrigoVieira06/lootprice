@@ -650,7 +650,7 @@ commit-msg:
 |---|---|
 | **Versão** | 0.3.2 |
 | **Última atualização** | 2026-07-15 |
-| **Fase atual** | Desenvolvimento — normalização e crawler Steam em andamento |
+| **Fase atual** | Desenvolvimento — endpoints públicos de jogos em andamento |
 
 ### Estrutura de Arquivos Atual
 
@@ -684,6 +684,12 @@ lootprice/
 │   │   ├── models/revoked_token.py ✅
 │   │   ├── core/privacy.py         ✅
 │   │   ├── schemas/user.py         ✅
+│   │   ├── schemas/game.py         ✅
+│   │   ├── schemas/price.py        ✅
+│   │   ├── api/v1/router.py        ✅
+│   │   ├── api/v1/search.py        ✅
+│   │   ├── api/v1/games.py         ✅
+│   │   ├── api/v1/prices.py        ✅
 │   │   ├── crawlers/base.py       ✅
 │   │   ├── crawlers/normalizer.py ✅
 │   │   ├── crawlers/steam.py      ✅
@@ -694,7 +700,7 @@ lootprice/
 │   │   ├── versions/202606220001_create_core_catalog_tables.py ✅
 │   │   └── versions/202606270001_create_auth_tables.py ✅
 │   │   └── versions/202606270002_add_store_policy_affiliate_clicks.py ✅
-│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py, test_crawler_normalizer.py, test_crawler_steam.py) ✅
+│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py, test_crawler_normalizer.py, test_crawler_steam.py, test_api_games.py) ✅
 │   ├── alembic.ini                 ✅
 │   ├── .env.example                  ✅
 │   ├── main.py                       ✅
@@ -742,6 +748,7 @@ lootprice/
 | 2026-06 | Mobile futuro comparará React Native + Expo, Tauri v2 e Capacitor | React Native + Expo é preferencial se mobile nativo virar prioridade; Tauri/Capacitor preservam mais reuso da SPA |
 | 2026-06 | Models de autenticação criados em migration própria | `users`, `oauth_accounts` e `revoked_tokens` desbloqueiam JWT local, OAuth, RBAC e logout real |
 | 2026-06 | Store policy e `affiliate_clicks` criados em migration própria | Flags de compliance/ingestão e métricas de clique sustentam redirect afiliado do MVP |
+| 2026-07 | Endpoints públicos filtram lojas por compliance e exibição de preço | Evitar expor preços de lojas inativas, não aprovadas ou sem permissão |
 
 ### Débitos Técnicos
 

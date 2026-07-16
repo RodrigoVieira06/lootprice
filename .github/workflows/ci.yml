@@ -61,6 +61,13 @@ jobs:
         working-directory: backend
         run: ruff format --check .
 
+      - name: Apply database migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://lootprice_test:lootprice_test@localhost:5432/lootprice_test
+          SECRET_KEY: ci-test-secret-key-not-for-production
+        run: alembic upgrade head
+
       - name: Pytest
         working-directory: backend
         env:
