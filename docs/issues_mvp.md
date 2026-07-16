@@ -944,7 +944,7 @@ Sequência respeitando dependências e prioridades:
 | #8 | Refresh/logout | [#31](https://github.com/RodrigoVieira06/lootprice/issues/31) | 📋 Backlog |
 | #9 | RBAC | [#34](https://github.com/RodrigoVieira06/lootprice/issues/34) | 📋 Backlog |
 | #10 | Normalização | [#35](https://github.com/RodrigoVieira06/lootprice/issues/35) | 📋 Backlog |
-| #11 | Steam crawler | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) | 📋 Backlog |
+| #11 | Steam crawler | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) | 🔄 **Code Review** |
 | #12 | Nuuvem crawler | [#37](https://github.com/RodrigoVieira06/lootprice/issues/37) | 📋 Backlog |
 | #13 | Runner | [#38](https://github.com/RodrigoVieira06/lootprice/issues/38) | 📋 Backlog |
 | #14 | API pública | [#39](https://github.com/RodrigoVieira06/lootprice/issues/39) | 📋 Backlog |
