@@ -649,8 +649,8 @@ commit-msg:
 | Campo | Valor |
 |---|---|
 | **Versão** | 0.3.2 |
-| **Última atualização** | 2026-06-27 |
-| **Fase atual** | Desenvolvimento — Arquitetura de afiliados, store compliance e models core |
+| **Última atualização** | 2026-07-15 |
+| **Fase atual** | Desenvolvimento — normalização e crawler Steam em andamento |
 
 ### Estrutura de Arquivos Atual
 
@@ -684,7 +684,9 @@ lootprice/
 │   │   ├── models/revoked_token.py ✅
 │   │   ├── core/privacy.py         ✅
 │   │   ├── schemas/user.py         ✅
+│   │   ├── crawlers/base.py       ✅
 │   │   ├── crawlers/normalizer.py ✅
+│   │   ├── crawlers/steam.py      ✅
 │   │   └── api/, schemas/, crawlers/  ✅
 │   ├── migrations/                 ✅
 │   │   ├── env.py                  ✅
@@ -692,7 +694,7 @@ lootprice/
 │   │   ├── versions/202606220001_create_core_catalog_tables.py ✅
 │   │   └── versions/202606270001_create_auth_tables.py ✅
 │   │   └── versions/202606270002_add_store_policy_affiliate_clicks.py ✅
-│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py, test_crawler_normalizer.py) ✅
+│   ├── tests/ (conftest.py, test_main.py, test_database.py, test_models.py, test_privacy.py, test_crawler_normalizer.py, test_crawler_steam.py) ✅
 │   ├── alembic.ini                 ✅
 │   ├── .env.example                  ✅
 │   ├── main.py                       ✅
@@ -733,6 +735,7 @@ lootprice/
 | 2026-06 | Programa de afiliados não substitui fonte de dados | Afiliado monetiza clique; API/feed/scraper/manual alimenta catálogo e preço |
 | 2026-06 | Toda loja exige política de ingestão e compliance | Evitar crawler proibido por termos e reduzir risco de bloqueio/legal |
 | 2026-06 | Cliques de compra passam por redirect interno | Permite métricas, `click_id/subid`, bloqueio de lojas inválidas e privacidade controlada |
+| 2026-07 | Crawler base e Steam usam `RawGameData` validado e API pública de busca | Separar coleta de tracking afiliado e permitir testes HTTP determinísticos |
 | 2026-06 | Marketplaces de keys ficam fora do MVP inicial | G2A/Eneba/Kinguin exigem UX de risco, região, vendedor e reputação |
 | 2026-06 | Frontend Fase 1.5 será web-first e mobile-ready | Preparar Android/iOS futuro sem adicionar stack mobile antes da fase mobile |
 | 2026-06 | Mobile futuro comparará React Native + Expo, Tauri v2 e Capacitor | React Native + Expo é preferencial se mobile nativo virar prioridade; Tauri/Capacitor preservam mais reuso da SPA |
