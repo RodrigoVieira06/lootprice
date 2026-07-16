@@ -80,17 +80,20 @@ Comandos ativos: `make install`, `make dev`, `make test`, `make lint`, `make for
 
 ## Workflow
 
-Para issues do GitHub, siga o fluxo de colunas do projeto:
+Para issues do GitHub, siga estritamente o fluxo de colunas do projeto. Não inicie
+implementação nem faça commit enquanto a demanda não estiver vinculada a uma issue
+priorizada:
 
-1. Atualizar título da issue para `[Developing]` via `gh issue edit`.
-2. Criar branch nova a partir de `master`: `git checkout -b <prefixo>/<descricao>`.
-3. Desenvolver com commits Conventional Commits.
-4. Push para branch remota.
-5. Abrir PR com `gh pr create`, usando `.github/PULL_REQUEST_TEMPLATE.md` e `Closes #XX` no body.
-6. Atualizar título da issue para `[Code Review]` via `gh issue edit`.
-7. Atualizar critérios de aceitação da issue
-8. Verificar CI com `gh pr checks <PR> --watch`.
-9. Após merge, atualizar título da issue para `[Done]`.
+1. Consultar a issue existente e suas dependências; nunca criar uma issue duplicada.
+2. Atualizar o título da issue para `[Prioritized]` via `gh issue edit`.
+3. Atualizar para `[Developing]` somente quando o trabalho começar.
+4. Criar branch nova a partir da `master` atualizada: `git checkout master`, `git pull origin master` e `git checkout -b <prefixo>/<descricao>`.
+5. Desenvolver com commits Conventional Commits.
+6. Push para branch remota.
+7. Abrir PR com `gh pr create`, usando `.github/PULL_REQUEST_TEMPLATE.md` e `Closes #XX` no body.
+8. Atualizar o título da issue para `[Code Review]` via `gh issue edit`.
+9. Atualizar critérios de aceitação da issue e verificar CI com `gh pr checks <PR> --watch`.
+10. Após merge, atualizar o título da issue para `[Done]`.
 
 Colunas: `[Backlog]` → `[Prioritized]` → `[Developing]` → `[Code Review]` → `[QA]` → `[Deploying]` → `[Done]`.
 

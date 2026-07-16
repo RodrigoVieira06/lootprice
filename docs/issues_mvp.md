@@ -329,7 +329,7 @@ Lógica de normalização que gera `canonical_name` e `slug` a partir do título
 |---|---|
 | **Ordem** | #11 |
 | **GitHub** | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) |
-| **Status** | `[Backlog]` |
+| **Status** | `[Developing]` |
 | **Tipo** | task |
 | **Título** | `#11 feat(crawler): implementar crawler Steam via API pública` |
 | **Labels** | `type:feat`, `priority:high` |
@@ -341,14 +341,19 @@ Lógica de normalização que gera `canonical_name` e `slug` a partir do título
 Crawler que consulta a API pública da Steam e retorna dados no formato `RawGameData`.
 
 **Critérios de Aceitação:**
-- [ ] `backend/app/crawlers/steam.py` herda de `BaseCrawler`
-- [ ] `store_slug = "steam"`
-- [ ] Usa HTTPX async e fonte/API permitida documentada em `docs/affiliate_store_strategy.md`
-- [ ] Steam não é tratada como fonte principal de monetização afiliada sem validação formal
-- [ ] Retorna `RawGameData` validado via Pydantic
-- [ ] Retorna `store_url` limpa; não depende de link afiliado hardcoded
-- [ ] `try/except` com logging em todo I/O
-- [ ] Testes com mock da API Steam
+- [x] `backend/app/crawlers/steam.py` herda de `BaseCrawler`
+- [x] `store_slug = "steam"`
+- [x] Usa HTTPX async e fonte/API permitida documentada em `docs/affiliate_store_strategy.md`
+- [x] Steam não é tratada como fonte principal de monetização afiliada sem validação formal
+- [x] Retorna `RawGameData` validado via Pydantic
+- [x] Retorna `store_url` limpa; não depende de link afiliado hardcoded
+- [x] `try/except` com logging em todo I/O
+- [x] Testes com mock da API Steam
+
+**Nota de processo:** a implementação foi realizada no commit `1969334` antes da
+issue ser priorizada e sem PR. O trabalho foi transportado para a branch correta
+`feat/crawler-steam-api`, criada a partir da `master` atualizada, para correção do
+fluxo antes da revisão.
 
 ---
 
@@ -939,7 +944,7 @@ Sequência respeitando dependências e prioridades:
 | #8 | Refresh/logout | [#31](https://github.com/RodrigoVieira06/lootprice/issues/31) | 📋 Backlog |
 | #9 | RBAC | [#34](https://github.com/RodrigoVieira06/lootprice/issues/34) | 📋 Backlog |
 | #10 | Normalização | [#35](https://github.com/RodrigoVieira06/lootprice/issues/35) | 📋 Backlog |
-| #11 | Steam crawler | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) | 📋 Backlog |
+| #11 | Steam crawler | [#36](https://github.com/RodrigoVieira06/lootprice/issues/36) | 🔄 **Code Review** |
 | #12 | Nuuvem crawler | [#37](https://github.com/RodrigoVieira06/lootprice/issues/37) | 📋 Backlog |
 | #13 | Runner | [#38](https://github.com/RodrigoVieira06/lootprice/issues/38) | 📋 Backlog |
 | #14 | API pública | [#39](https://github.com/RodrigoVieira06/lootprice/issues/39) | 📋 Backlog |

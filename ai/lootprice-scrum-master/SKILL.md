@@ -87,6 +87,10 @@ Regras:
 
 Use `gh issue edit <N> --repo RodrigoVieira06/lootprice --title "[NovoPrefixo] restante do título"`.
 
+Fluxo obrigatório antes do desenvolvimento: `[Backlog]` → `[Prioritized]` →
+`[Developing]`. A branch só pode ser criada a partir da `master` atualizada depois
+da priorização registrada na issue.
+
 ### 3.3 — Consultar Backlog
 
 Use `gh issue list --repo RodrigoVieira06/lootprice --state open --search "[Backlog]"`.
