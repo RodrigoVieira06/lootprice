@@ -736,6 +736,7 @@ lootprice/
 | 2026-06 | Toda loja exige política de ingestão e compliance | Evitar crawler proibido por termos e reduzir risco de bloqueio/legal |
 | 2026-06 | Cliques de compra passam por redirect interno | Permite métricas, `click_id/subid`, bloqueio de lojas inválidas e privacidade controlada |
 | 2026-07 | Crawler base e Steam usam `RawGameData` validado e API pública de busca | Separar coleta de tracking afiliado e permitir testes HTTP determinísticos |
+| 2026-07 | Issue priorizada antes de branch/implementação e PR obrigatório | Evitar commits órfãos e manter rastreabilidade entre demanda, branch e revisão |
 | 2026-06 | Marketplaces de keys ficam fora do MVP inicial | G2A/Eneba/Kinguin exigem UX de risco, região, vendedor e reputação |
 | 2026-06 | Frontend Fase 1.5 será web-first e mobile-ready | Preparar Android/iOS futuro sem adicionar stack mobile antes da fase mobile |
 | 2026-06 | Mobile futuro comparará React Native + Expo, Tauri v2 e Capacitor | React Native + Expo é preferencial se mobile nativo virar prioridade; Tauri/Capacitor preservam mais reuso da SPA |
